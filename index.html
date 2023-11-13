@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+
+  <link rel="stylesheet" href="/src/reset.css" />
+  <link rel="stylesheet" href="/src/grid.css" />
+  <link rel="stylesheet" href="/src/styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <title>Duskhaven Launcher</title>
+  <script type="module" src="/src/main.ts" defer></script>
+  <style>
+    .logo.vite:hover {
+      filter: drop-shadow(0 0 2em #747bff);
+    }
+
+    .logo.typescript:hover {
+      filter: drop-shadow(0 0 2em #2d79c7);
+    }
+  </style>
+</head>
+
+<body data-tauri-drag-region>
+  <div data-tauri-drag-region class="titlebar">
+    <img src="img/logo.png">
+    <!-- <a  href="https://discord.gg/duskhaven" target="_blank" class="titlebar-button button--discord" id="titlebar-discord">
+    </a> -->
+    <iconify-icon class="titlebar-button button--min" id="titlebar-minimize" icon="mdi:minus"></iconify-icon>
+    <iconify-icon class="titlebar-button button--close" id="titlebar-close" icon="ic:baseline-close"></iconify-icon>
+
+    </div>
+  </div>
+  <iconify-icon id="animation-toggle" icon="mdi:clapperboard-off-outline"></iconify-icon>
+
+  <!-- <div id="fog" class="fog">
+    <div class="image01"></div>
+    <div class="image02"></div>
+  </div> -->
+  <div class="page-wrapper">
+
+    <div class="row">
+      <aside class="col-6">
+
+      </aside>
+      <main class="col-6 text-center">
+        <img class="text-logo" src="img/logo_text.png">
+
+      </main>
+    </div>
+
+    <div class=" row">
+      <div class="col-6 text-center">
+        <h3 class="title">LATEST NEWS</h3>
+        <div class="content">
+          <ul id="newslist">
+
+          </ul>
+        </div>
+        <div class="text-center">
+          download progress: 24%
+        </div>
+        <div class="download">
+          <div class="download-progress" style="width: 24%"></div>
+        </div>
+      </div>
+      <div class="col-6 text-center">
+        <h3 class="title">LAUNCH</h3>
+        <div>
+          <button id="play-button" class="button--big"><span class="status-text">download</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="fogwrapper">
+  <div id="foglayer_01" class="fog">
+    <div class="image01"></div>
+    <div class="image02"></div>
+  </div>
+  <div id="foglayer_02" class="fog">
+    <div class="image01"></div>
+    <div class="image02"></div>
+  </div>
+  <div id="foglayer_03" class="fog">
+    <div class="image01"></div>
+    <div class="image02"></div>
+  </div>
+</div>
+</body>
+
+</html>
