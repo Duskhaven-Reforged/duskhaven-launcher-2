@@ -26,14 +26,7 @@ headers.append('Access-Control-Allow-Methods', 'GET');
 const playSound = new Audio("/audio/play.wav");
 
 window.addEventListener("DOMContentLoaded", () => {
-
-
-  getNews();
-  // greetInputEl = document.querySelector("#greet-input");
-  // greetMsgEl = document.querySelector("#greet-msg");
-  // document
-  //   .querySelector("#greet-button")
-  //   ?.addEventListener("click", () => greet());
+  //getNews();
   document.getElementById('titlebar-minimize')?.addEventListener('click', () => appWindow.minimize())
   document.getElementById('titlebar-close')?.addEventListener('click', () => appWindow.close())
   document.getElementById('animation-toggle')?.addEventListener('click', toggleAnimation);
@@ -41,7 +34,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 });
 function toggleAnimation(e: MouseEvent) {
-  animcontainer = document.querySelector("#fog");
+  animcontainer = document.querySelector(".fogwrapper");
   const icon = e.target as HTMLElement;
   if (animcontainer != null) {
     if (animcontainer.style.display === "none") {
@@ -63,6 +56,11 @@ function toggleAnimation(e: MouseEvent) {
 listen('DOWNLOAD_PROGRESS', (event) => {
   const progress: any = event.payload;
   console.log(`Downloaded: ${progress.transferred} bytes (${progress.percentage}%) Transfer rate: ${progress.transfer_rate} bytes/sec`);
+  const dlProgress: HTMLElement | null = document.querySelector(".download-progress");
+  const dlText: HTMLElement | null = document.querySelector(".download-container .text-center");
+  dlProgress!.style!.width = `${progress.percentage}%`;
+  dlText!.innerHTML = `download progress: ${progress.percentage}% (${(progress.transfer_rate / 1000 / 1000).toFixed(2)} megabytes/sec)`;
+
 });
 
 // listen for download finished
@@ -139,7 +137,3 @@ function playAudio() {
   playSound.volume = 0.20;
   playSound.play();
 }
-
-listen("download-progress", (progress) => {
-  console.log(`Download progress: ${progress}%`);
-});

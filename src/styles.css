@@ -107,6 +107,7 @@ input {
   background: var(--dark);
   color: white;
   right: 0;
+  z-index: 1;
   padding: 5px;
   font-size: 1.5rem;
 }
@@ -230,17 +231,16 @@ ul {
   outline: 0;
   background-color: transparent;
 }
+.download-container {
+  margin-top: 56%;
+}
 
 .button--big {
-
-  margin-top: 100px;
+  margin-top: 54%;
   outline: 0;
   border: 0;
   background-color: transparent;
-
-
   position: relative;
-
 
   &::after {
     z-index: 0;
@@ -262,7 +262,6 @@ ul {
     }
 
   }
-
 
   &:disabled {
     filter: grayscale(1);
@@ -350,6 +349,7 @@ ul {
 
 /* ---------- Fog ---------- */
 .fogwrapper {
+  opacity: 0.35;
   height: 100%;
   z-index: 0;
   position: absolute;
