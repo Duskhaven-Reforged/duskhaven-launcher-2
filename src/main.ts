@@ -1,20 +1,11 @@
 // import { invoke } from "@tauri-apps/api/tauri";
 import { appWindow } from '@tauri-apps/api/window';
-import { save as saveFile } from "@tauri-apps/api/dialog";
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen } from "@tauri-apps/api/event";
 
-const URI = "http://65.109.128.248:8080/PatchFiles/"
 //let newsListEl: HTMLElement | null;
 let animcontainer: HTMLElement | null;
-// async function greet() {
-// if (greetMsgEl && greetInputEl) {
-//   // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-//   greetMsgEl.textContent = await invoke("greet", {
-//     name: greetInputEl.value,
-//   });
-// }
-// }
+
 let headers = new Headers();
 
 headers.append('Content-Type', 'application/json');
@@ -23,7 +14,9 @@ headers.append('Access-Control-Allow-Credentials', 'true');
 headers.append('Access-Control-Allow-Origin', '*');
 headers.append('Access-Control-Allow-Methods', 'GET');
 
-const playSound = new Audio("/audio/play.wav");
+const url = import.meta.env.VITE_FILESERVER_URL;  
+//const key = import.meta.env.VITE_ACCESS_KEY; 
+//const playSound = new Audio("/audio/play.wav");
 
 window.addEventListener("DOMContentLoaded", () => {
   //getNews();
@@ -46,20 +39,15 @@ function toggleAnimation(e: MouseEvent) {
       icon.setAttribute("icon", "mdi:clapperboard-open-outline");
     }
   }
-
-  //mdi:clapperboard-open-outline
 }
-// start the download
-
 
 // listen for progress updates
 listen('DOWNLOAD_PROGRESS', (event) => {
   const progress: any = event.payload;
-  console.log(`Downloaded: ${progress.transferred} bytes (${progress.percentage}%) Transfer rate: ${progress.transfer_rate} bytes/sec`);
   const dlProgress: HTMLElement | null = document.querySelector(".download-progress");
   const dlText: HTMLElement | null = document.querySelector(".download-container .text-center");
   dlProgress!.style!.width = `${progress.percentage}%`;
-  dlText!.innerHTML = `download progress: ${progress.percentage}% (${(progress.transfer_rate / 1000 / 1000).toFixed(2)} megabytes/sec)`;
+  dlText!.innerHTML = `download progress: ${progress.percentage.toFixed(2)}% (${(progress.transfer_rate / 1000 / 1000).toFixed(2)} megabytes/sec)`;
 
 });
 
@@ -69,52 +57,52 @@ listen('DOWNLOAD_FINISHED', () => {
 });
 
 function downloadFiles() {
-  playAudio();
+  //playAudio();
   invoke('download_file', {
-    url: "https://undesign.be/rustyspoon.jpg",
-    destination: "C:/Games/spoon.jpg",
+    url: `${url}patch-J.mpq`,
+    destination: "C:/Games/patch-J.mpq",
   }).then(() => {
     console.log('Download started');
-   }).catch(err => {
+  }).catch(err => {
     console.error('Failed to start download:', err);
-   });
+  });
 
 }
 
-async function getNews() {
-  const response = await fetch("https://duskhaven-news.glitch.me/changelog", { method: "GET", headers });
-  if (response.ok) {
-    const newsContainer = document.getElementById('newslist');
-    const data = await response.json();
-    console.log(data);
-    data.forEach((newsItem: any) => {
-      let sanitized = newsItem["content"];
-      sanitized = sanitized.replace(/@(everyone|here)/g, "To all users");
+// async function getNews() {
+//   const response = await fetch("https://duskhaven-news.glitch.me/changelog", { method: "GET", headers });
+//   if (response.ok) {
+//     const newsContainer = document.getElementById('newslist');
+//     const data = await response.json();
+//     data.forEach((newsItem: any) => {
+//       let sanitized = newsItem["content"];
+//       sanitized = sanitized.replace(/@(everyone|here)/g, "To all users");
 
-      // Replace **text** with "text"
-      sanitized = sanitized.replace(/\*{2}(.*?)\*{2}/g, "\$1");
-      sanitized = sanitized.replace(/_{2}(.*?)_{2}/g, "\$1");
-      sanitized = sanitized.replace(/<.*>/g, "");
-      sanitized = sanitized.replace(/\n/g, "<br />");
-      let channel = document.createElement("span");
-      channel.innerHTML = newsItem["channelName"] + ":<br />";
-      channel.style.fontWeight = "bold";
-      let content = document.createElement("span");
-      content.style.fontWeight = "normal";
-      content.innerHTML = sanitized + ":<br /><br />";
-      var newLI = document.createElement('li');
+//       // Replace **text** with "text"
+//       sanitized = sanitized.replace(/\*{2}(.*?)\*{2}/g, "\$1");
+//       sanitized = sanitized.replace(/_{2}(.*?)_{2}/g, "\$1");
+//       sanitized = sanitized.replace(/<.*>/g, "");
+//       sanitized = sanitized.replace(/\n/g, "<br />");
+//       let channel = document.createElement("span");
+//       channel.innerHTML = newsItem["channelName"] + ":<br />";
+//       channel.style.fontWeight = "bold";
+//       let content = document.createElement("span");
+//       content.style.fontWeight = "normal";
+//       content.innerHTML = sanitized + ":<br /><br />";
+//       var newLI = document.createElement('li');
 
-      newLI.appendChild(channel).appendChild(content);
+//       newLI.appendChild(channel).appendChild(content);
 
-      newsContainer?.appendChild(newLI);
-    });
+//       newsContainer?.appendChild(newLI);
+//     });
 
-    //newsListEl = document.querySelector("#newsList");
-  } else {
+//     //newsListEl = document.querySelector("#newsList");
+//   } else {
 
-    console.error(`HTTP error: ${response.status}`);
-  }
-}
+//     console.error(`HTTP error: ${response.status}`);
+//   }
+// }
+
 function onKonamiCode(cb: Function) {
   var input = '';
   var key = '38384040373937396665';
@@ -132,8 +120,8 @@ onKonamiCode(function () {
   document.body.style.backgroundImage = "url('./src/assets/background.gif')";
 });
 
-function playAudio() {
-  
-  playSound.volume = 0.20;
-  playSound.play();
-}
+// function playAudio() {
+
+//   playSound.volume = 0.20;
+//   playSound.play();
+// }
