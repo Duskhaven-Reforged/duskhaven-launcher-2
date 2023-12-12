@@ -1,5 +1,5 @@
 // import { invoke } from "@tauri-apps/api/tauri";
-import { appWindow } from '@tauri-apps/api/window';
+import { appWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen } from "@tauri-apps/api/event";
 
@@ -8,23 +8,30 @@ let animcontainer: HTMLElement | null;
 
 let headers = new Headers();
 
-headers.append('Content-Type', 'application/json');
-headers.append('Accept', 'application/json');
-headers.append('Access-Control-Allow-Credentials', 'true');
-headers.append('Access-Control-Allow-Origin', '*');
-headers.append('Access-Control-Allow-Methods', 'GET');
+headers.append("Content-Type", "application/json");
+headers.append("Accept", "application/json");
+headers.append("Access-Control-Allow-Credentials", "true");
+headers.append("Access-Control-Allow-Origin", "*");
+headers.append("Access-Control-Allow-Methods", "GET");
 
-const url = import.meta.env.VITE_FILESERVER_URL;  
-//const key = import.meta.env.VITE_ACCESS_KEY; 
+const url = import.meta.env.VITE_FILESERVER_URL;
+//const key = import.meta.env.VITE_ACCESS_KEY;
 //const playSound = new Audio("/audio/play.wav");
 
 window.addEventListener("DOMContentLoaded", () => {
   //getNews();
-  document.getElementById('titlebar-minimize')?.addEventListener('click', () => appWindow.minimize())
-  document.getElementById('titlebar-close')?.addEventListener('click', () => appWindow.close())
-  document.getElementById('animation-toggle')?.addEventListener('click', toggleAnimation);
-  document.getElementById('play-button')?.addEventListener('click', downloadFiles);
-
+  document
+    .getElementById("titlebar-minimize")
+    ?.addEventListener("click", () => appWindow.minimize());
+  document
+    .getElementById("titlebar-close")
+    ?.addEventListener("click", () => appWindow.close());
+  document
+    .getElementById("animation-toggle")
+    ?.addEventListener("click", toggleAnimation);
+  document
+    .getElementById("play-button")
+    ?.addEventListener("click", downloadFiles);
 });
 function toggleAnimation(e: MouseEvent) {
   animcontainer = document.querySelector(".fogwrapper");
@@ -33,8 +40,7 @@ function toggleAnimation(e: MouseEvent) {
     if (animcontainer.style.display === "none") {
       animcontainer.style.display = "block";
       icon.setAttribute("icon", "mdi:clapperboard-off-outline");
-    }
-    else {
+    } else {
       animcontainer.style.display = "none";
       icon.setAttribute("icon", "mdi:clapperboard-open-outline");
     }
@@ -42,31 +48,37 @@ function toggleAnimation(e: MouseEvent) {
 }
 
 // listen for progress updates
-listen('DOWNLOAD_PROGRESS', (event) => {
+listen("DOWNLOAD_PROGRESS", (event) => {
   const progress: any = event.payload;
-  const dlProgress: HTMLElement | null = document.querySelector(".download-progress");
-  const dlText: HTMLElement | null = document.querySelector(".download-container .text-center");
+  const dlProgress: HTMLElement | null =
+    document.querySelector(".download-progress");
+  const dlText: HTMLElement | null = document.querySelector(
+    ".download-container .text-center"
+  );
   dlProgress!.style!.width = `${progress.percentage}%`;
-  dlText!.innerHTML = `download progress: ${progress.percentage.toFixed(2)}% (${(progress.transfer_rate / 1000 / 1000).toFixed(2)} megabytes/sec)`;
-
+  dlText!.innerHTML = `download progress: ${progress.percentage.toFixed(
+    2
+  )}% (${(progress.transfer_rate / 1000 / 1000).toFixed(2)} megabytes/sec)`;
 });
 
 // listen for download finished
-listen('DOWNLOAD_FINISHED', () => {
-  console.log('Download finished');
+listen("DOWNLOAD_FINISHED", () => {
+  console.log("Download finished");
 });
 
 function downloadFiles() {
   //playAudio();
-  invoke('download_file', {
+  console.log("STARTED");
+  invoke("download_file", {
     url: `${url}patch-J.mpq`,
     destination: "C:/Games/patch-J.mpq",
-  }).then(() => {
-    console.log('Download started');
-  }).catch(err => {
-    console.error('Failed to start download:', err);
-  });
-
+  })
+    .then(() => {
+      console.log("Download started");
+    })
+    .catch((err) => {
+      console.error("Failed to start download:", err);
+    });
 }
 
 // async function getNews() {
@@ -104,15 +116,15 @@ function downloadFiles() {
 // }
 
 function onKonamiCode(cb: Function) {
-  var input = '';
-  var key = '38384040373937396665';
-  document.addEventListener('keydown', function (e) {
-    input += ("" + e.keyCode);
+  var input = "";
+  var key = "38384040373937396665";
+  document.addEventListener("keydown", function (e) {
+    input += "" + e.keyCode;
     if (input === key) {
       return cb();
     }
     if (!key.indexOf(input)) return;
-    input = ("" + e.keyCode);
+    input = "" + e.keyCode;
   });
 }
 

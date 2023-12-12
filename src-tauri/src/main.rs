@@ -1,14 +1,21 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+extern crate serde_json;
 
+use reqwest::header::HeaderMap;
 // src-tauri/src/main.rs
-use reqwest::Client;
-use serde::Serialize;
+use hex;
+use hex::encode;
+use reqwest::{Client, RequestBuilder};
+use ring::digest::{Context, Digest, SHA256};
+use serde::{Deserialize, Serialize};
+use std::io::{Error, Read};
 use std::panic;
+use std::path::Path;
 use std::time::Instant;
 use tauri::Manager;
 use tokio::fs::File;
-use tokio::io::{AsyncWriteExt, BufWriter};
+use tokio::io::{AsyncReadExt, AsyncWriteExt, BufReader, BufWriter};
 
 #[derive(Serialize)]
 pub struct Progress {
@@ -19,12 +26,72 @@ pub struct Progress {
     pub percentage: f64,
 }
 
+pub type Patches = Vec<Patch>;
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct Patch {
+    guid: String,
+    storage_zone_name: String,
+    path: String,
+    object_name: String,
+    length: i64,
+    last_changed: String,
+    server_id: i64,
+    array_number: i64,
+    is_directory: bool,
+    user_id: String,
+    content_type: String,
+    date_created: String,
+    storage_zone_id: i64,
+    checksum: String,
+    replicated_zones: String,
+}
+
+fn sha256_digest<R: Read>(mut reader: R) -> Result<Digest, Error> {
+    let mut context = Context::new(&SHA256);
+    let mut buffer = [0; 1024];
+    loop {
+        let count = reader.read(&mut buffer)?;
+        if count == 0 {
+            break;
+        }
+        context.update(&buffer[..count]);
+    }
+    Ok(context.finish())
+
+    // How to Use:
+    // let path = "C:/Games/patch-J.mpq";
+    // let mut file = File::open(path).await.map_err(|e| e.to_string())?;
+    // let mut buffer = Vec::new();
+    // file.read_to_end(&mut buffer)
+    //     .await
+    //     .map_err(|e| e.to_string())?;
+    // let digest = sha256_digest(&mut buffer.as_slice()).unwrap();
+    // let digest_string = encode(digest.as_ref());
+    // println!("SHA-256 digest is {}", digest_string);
+}
+
+async fn getPatches(client: Client) -> Result<Patches, String> {
+    let body = client
+        .get("https://storage.bunnycdn.com/duskhaven-patches/")
+        .header("AccessKey", "e56f9198-3a9c-4e06-9be7cfec52c3-4757-4aac")
+        .send()
+        .await
+        .map_err(|err| err.to_string())?;
+    let b = body.text().await.unwrap();
+    let patches: Patches = serde_json::from_str(&b).unwrap();
+
+    Ok(patches)
+}
+
 #[tauri::command]
 async fn download_file(
     app: tauri::AppHandle,
     url: String,
     destination: String,
 ) -> Result<(), String> {
+    println!("Started DL File Function");
     let client = Client::new();
     let total_size = client
         .head(&url)
@@ -108,7 +175,6 @@ async fn download_file(
         Err(total_size.status().as_str().to_string())
     }
 }
-
 
 fn main() {
     panic::set_hook(Box::new(|panic_info| {
