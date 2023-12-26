@@ -2,23 +2,28 @@
 import { appWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen } from "@tauri-apps/api/event";
+import { Patch } from "./patch";
+
+
+enum ButtonStates {
+  PLAY = "Play",
+  DOWNLOAD = "Download",
+  UPDATE = "Update",
+}
 
 //let newsListEl: HTMLElement | null;
 let animcontainer: HTMLElement | null;
 
-let headers = new Headers();
-
-headers.append("Content-Type", "application/json");
-headers.append("Accept", "application/json");
-headers.append("Access-Control-Allow-Credentials", "true");
-headers.append("Access-Control-Allow-Origin", "*");
-headers.append("Access-Control-Allow-Methods", "GET");
-
+let patches: Array<Patch>;
+let downloadArray: Array<Patch> = [];
 const url = import.meta.env.VITE_FILESERVER_URL;
 //const key = import.meta.env.VITE_ACCESS_KEY;
 //const playSound = new Audio("/audio/play.wav");
-
+const playButton: HTMLButtonElement = document.getElementById("play-button") as HTMLButtonElement;
+const statusText = playButton?.querySelector(".status-text");
 window.addEventListener("DOMContentLoaded", () => {
+
+  fetchPatches();
   //getNews();
   document
     .getElementById("titlebar-minimize")
@@ -29,10 +34,10 @@ window.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("animation-toggle")
     ?.addEventListener("click", toggleAnimation);
-  document
-    .getElementById("play-button")
-    ?.addEventListener("click", downloadFiles);
+
+  playButton?.addEventListener("click", downloadFiles);
 });
+
 function toggleAnimation(e: MouseEvent) {
   animcontainer = document.querySelector(".fogwrapper");
   const icon = e.target as HTMLElement;
@@ -56,29 +61,77 @@ listen("DOWNLOAD_PROGRESS", (event) => {
     ".download-container .text-center"
   );
   dlProgress!.style!.width = `${progress.percentage}%`;
-  dlText!.innerHTML = `download progress: ${progress.percentage.toFixed(
+  dlText!.innerHTML = `download progress: ${downloadArray[progress.download_id].ObjectName} ${progress.percentage.toFixed(
     2
   )}% (${(progress.transfer_rate / 1000 / 1000).toFixed(2)} megabytes/sec)`;
 });
 
 // listen for download finished
-listen("DOWNLOAD_FINISHED", () => {
-  console.log("Download finished");
+listen("DOWNLOAD_FINISHED", (event) => {
+  console.log("Download finished", event.payload);
+  if (event?.payload.download_id === downloadArray.length -1) {
+    setButtonState(ButtonStates.PLAY, false);
+  }
 });
 
-function downloadFiles() {
+async function downloadFiles() {
   //playAudio();
-  console.log("STARTED");
-  invoke("download_file", {
-    url: `${url}patch-J.mpq`,
-    destination: "C:/Games/patch-J.mpq",
-  })
-    .then(() => {
-      console.log("Download started");
+  if (downloadArray) {
+    const urls = downloadArray.map((patch) => {
+      return `${url}${patch.ObjectName}`;
     })
-    .catch((err) => {
-      console.error("Failed to start download:", err);
-    });
+    const destinations = downloadArray.map((patch) => {
+      return `C:/Games/${patch.ObjectName}`;
+    })
+    setButtonState(ButtonStates.UPDATE, true);
+    await invoke("download_files", {
+      urls: urls,
+      destinations: destinations,
+    })
+      .then(() => {
+        console.log("Download started");
+      })
+      .catch((err) => {
+        setButtonState(ButtonStates.UPDATE, false);
+        console.error("Failed to start download:", err);
+      });
+  }
+  else {
+    setButtonState(ButtonStates.PLAY, false);
+    
+  }
+}
+
+async function fetchPatches() {
+  try {
+    patches = await invoke('get_patches');
+    console.log(patches);
+  } catch (error) {
+    console.error('Failed to fetch patches:', error);
+  }
+
+  for (const patch of patches) {
+    try {
+      const timeStamp = await invoke('modified_time', { filePath: `C:/Games/${patch.ObjectName}` });
+      if (((new Date(patch.LastChanged).getTime() / 1000) > timeStamp.secs_since_epoch)) {
+        await downloadArray.push(patch);
+      }
+    } catch (error) {
+      await downloadArray.push(patch);
+    }
+  }
+  if(downloadArray.length === 0) {
+    setButtonState(ButtonStates.PLAY, false);
+  }
+  else {
+    setButtonState(ButtonStates.UPDATE, false);
+  }
+}
+
+function setButtonState(state: ButtonStates, disabled: boolean) {
+  playButton.disabled = disabled;
+  if(statusText)
+  statusText.innerHTML = state;
 }
 
 // async function getNews() {
