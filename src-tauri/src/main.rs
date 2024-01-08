@@ -11,6 +11,7 @@ use ring::digest::{Context, Digest, SHA256};
 use serde::{Deserialize, Serialize};
 use std::io::{Error, Read};
 use std::path::Path;
+use std::process::Command;
 use std::time::{Instant, SystemTime};
 use std::{fs, panic};
 use tauri::Manager;
@@ -98,6 +99,15 @@ async fn get_patches() -> Result<Patches, String> {
 }
 
 #[tauri::command]
+fn open_app(path: String) -> Result<String, String> {
+  let child = Command::new(path)
+    .spawn()
+    .map_err(|err| err.to_string())?;
+
+  Ok(format!("Application opened with PID {}", child.id()))
+}
+
+#[tauri::command]
 async fn download_files(
     app: tauri::AppHandle,
     urls: Vec<String>,
@@ -151,7 +161,7 @@ async fn download_files(
                     }
                 };
                 downloaded += chunk.len() as u64;
-
+                out.flush().await.map_err(|err| err.to_string())?;
                 progress.transfered = downloaded;
                 progress.percentage = if size != 0 {
                     (100.0 * downloaded as f64) / size as f64
@@ -200,7 +210,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             download_files,
             get_patches,
-            modified_time
+            modified_time,
+            open_app
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

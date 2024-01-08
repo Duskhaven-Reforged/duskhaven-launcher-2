@@ -15,3 +15,11 @@ export interface Patch {
     StorageZoneName: string;
     UserId: string;
 }
+
+export interface Progress {
+    download_id: number,
+    filesize: number,
+    transfered: number,
+    transfer_rate: number,
+    percentage: number,
+}

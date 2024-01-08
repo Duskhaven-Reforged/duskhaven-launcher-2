@@ -2,7 +2,9 @@
 import { appWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen } from "@tauri-apps/api/event";
-import { Patch } from "./patch";
+import { Patch, Progress } from "./patch";
+import { open, ask, message } from '@tauri-apps/api/dialog';
+import { appDataDir } from '@tauri-apps/api/path';
 
 
 enum ButtonStates {
@@ -13,17 +15,17 @@ enum ButtonStates {
 
 //let newsListEl: HTMLElement | null;
 let animcontainer: HTMLElement | null;
-
+let installDirectory = localStorage.getItem("installDirectory");
 let patches: Array<Patch>;
 let downloadArray: Array<Patch> = [];
 const url = import.meta.env.VITE_FILESERVER_URL;
 //const key = import.meta.env.VITE_ACCESS_KEY;
-//const playSound = new Audio("/audio/play.wav");
+const playSound = new Audio("/audio/play.wav");
 const playButton: HTMLButtonElement = document.getElementById("play-button") as HTMLButtonElement;
 const statusText = playButton?.querySelector(".status-text");
 window.addEventListener("DOMContentLoaded", () => {
 
-  fetchPatches();
+
   //getNews();
   document
     .getElementById("titlebar-minimize")
@@ -35,8 +37,48 @@ window.addEventListener("DOMContentLoaded", () => {
     .getElementById("animation-toggle")
     ?.addEventListener("click", toggleAnimation);
 
-  playButton?.addEventListener("click", downloadFiles);
+  hasInstallDirectory();
+
+  document.getElementById("titlebar-dir")?.addEventListener("click", setInstallDirectory)
+  playButton?.addEventListener("click", handlePlayButton);
 });
+
+async function hasInstallDirectory() {
+  const appdir = await appDataDir();
+  if (!installDirectory) {
+    const yes = await ask('no install directory set want to set one now?', 'Duskhaven');
+    if (!yes) {
+      installDirectory = appdir;
+      localStorage.setItem("installDirectory", appdir)
+      await message(`Ok if you press download we will download this in the current directory ${appdir}`, 'Duskhaven');
+      return;
+    }
+    else {
+      setInstallDirectory();
+    }
+  }
+  fetchPatches();
+}
+async function setInstallDirectory() {
+  const appdir = await appDataDir();
+
+  const selected = await open({
+    directory: true,
+    multiple: false,
+    defaultPath: installDirectory || appdir,
+  });
+
+  if (Array.isArray(selected)) {
+    installDirectory = selected[0];
+    localStorage.setItem("installDirectory", installDirectory)
+  } else if (selected === null) {
+    // user cancelled the selection
+  } else {
+    installDirectory = selected;
+    localStorage.setItem("installDirectory", installDirectory)
+  }
+  fetchPatches();
+}
 
 function toggleAnimation(e: MouseEvent) {
   animcontainer = document.querySelector(".fogwrapper");
@@ -67,13 +109,19 @@ listen("DOWNLOAD_PROGRESS", (event) => {
 });
 
 // listen for download finished
-listen("DOWNLOAD_FINISHED", (event) => {
+listen("DOWNLOAD_FINISHED", (event: { payload: Progress }) => {
   console.log("Download finished", event.payload);
-  if (event?.payload.download_id === downloadArray.length -1) {
+  if (event?.payload.download_id === downloadArray.length - 1) {
     setButtonState(ButtonStates.PLAY, false);
   }
 });
-
+async function startGame() {
+  console.log("we goin");
+  playAudio();
+  invoke('open_app', { path: `${installDirectory}/dusk-wow.exe` })
+    .then(message => console.log(message))
+    .catch(error => console.error(error))
+}
 async function downloadFiles() {
   //playAudio();
   if (downloadArray) {
@@ -81,7 +129,7 @@ async function downloadFiles() {
       return `${url}${patch.ObjectName}`;
     })
     const destinations = downloadArray.map((patch) => {
-      return `C:/Games/${patch.ObjectName}`;
+      return `${installDirectory}/Data/${patch.ObjectName}`;
     })
     setButtonState(ButtonStates.UPDATE, true);
     await invoke("download_files", {
@@ -98,7 +146,18 @@ async function downloadFiles() {
   }
   else {
     setButtonState(ButtonStates.PLAY, false);
-    
+
+  }
+}
+
+async function handlePlayButton() {
+  const statusText = playButton.querySelector(".status-text");
+  switch (statusText?.innerHTML) {
+    case ButtonStates.PLAY: startGame();
+      break;
+    case ButtonStates.DOWNLOAD:
+    case ButtonStates.UPDATE: downloadFiles();
+      break;
   }
 }
 
@@ -109,29 +168,35 @@ async function fetchPatches() {
   } catch (error) {
     console.error('Failed to fetch patches:', error);
   }
-
+  downloadArray = [];
   for (const patch of patches) {
     try {
-      const timeStamp = await invoke('modified_time', { filePath: `C:/Games/${patch.ObjectName}` });
+      const timeStamp: { secs_since_epoch: number } = await invoke('modified_time', { filePath: `${installDirectory}/Data/${patch.ObjectName}` });
+      console.log((new Date(patch.LastChanged).getTime() / 1000) > timeStamp.secs_since_epoch);
       if (((new Date(patch.LastChanged).getTime() / 1000) > timeStamp.secs_since_epoch)) {
         await downloadArray.push(patch);
       }
     } catch (error) {
+      console.log(error);
       await downloadArray.push(patch);
     }
   }
-  if(downloadArray.length === 0) {
+  if (downloadArray.length === 0) {
     setButtonState(ButtonStates.PLAY, false);
+  }
+  else if (downloadArray.length === patches.length) {
+    setButtonState(ButtonStates.DOWNLOAD, false);
   }
   else {
     setButtonState(ButtonStates.UPDATE, false);
   }
+  console.log(downloadArray);
 }
 
 function setButtonState(state: ButtonStates, disabled: boolean) {
   playButton.disabled = disabled;
-  if(statusText)
-  statusText.innerHTML = state;
+  if (statusText)
+    statusText.innerHTML = state;
 }
 
 // async function getNews() {
@@ -185,8 +250,7 @@ onKonamiCode(function () {
   document.body.style.backgroundImage = "url('./src/assets/background.gif')";
 });
 
-// function playAudio() {
-
-//   playSound.volume = 0.20;
-//   playSound.play();
-// }
+function playAudio() {
+  playSound.volume = 0.5;
+  playSound.play();
+}

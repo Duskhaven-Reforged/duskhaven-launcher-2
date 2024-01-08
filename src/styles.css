@@ -208,6 +208,10 @@ ul {
   right: 3rem;
 }
 
+.button--folder {
+  right: 5rem;
+}
+
 .title {
   font-size: 20px;
   padding: 10px;
@@ -231,41 +235,43 @@ ul {
   outline: 0;
   background-color: transparent;
 }
+
 .download-container {
   margin-top: 56%;
 }
 
 .button--big {
-  margin-top: 54%;
+  margin-top: 30%;
   outline: 0;
   border: 0;
   background-color: transparent;
   position: relative;
+}
 
-  &::after {
-    z-index: 0;
-    content: "";
-    position: absolute;
-    width: 90%;
-    border-radius: 9999px;
-    height: calc(100% - 10px);
-    top: 5px;
-    transform: translateX(-50%);
-    left: 50%;
-    box-shadow: 0 0 0 #ff2400AA;
-    transition: all 0.2s ease-in-out;
-  }
+.button--big:after {
+  z-index: 0;
+  content: "";
+  position: absolute;
+  width: 90%;
+  border-radius: 9999px;
+  height: calc(100% - 10px);
+  top: 5px;
+  transform: translateX(-50%);
+  left: 50%;
+  box-shadow: 0 0 0 #ff2400AA;
+  transition: all 0.2s ease-in-out;
+}
 
-  &:hover {
-    &::after {
-      box-shadow: 0 0 25px #ff2400AA;
-    }
+.button--big:disabled {
+  filter: grayscale(1);
+}
 
-  }
+.button--big:hover::after {
+  box-shadow: 0 0 25px #ff2400AA;
+}
 
-  &:disabled {
-    filter: grayscale(1);
-  }
+.button--big:active::after {
+  box-shadow: 0 0 50px #ff2400AA;
 }
 
 .button--big span {
@@ -345,6 +351,38 @@ ul {
   clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0 50%);
 }
 
+.options {
+  margin-top: 11%;
+}
+
+.options-button {
+  display: inline-block;
+  background-image: url("assets/button-small.png");
+  background-size: contain;
+  transition: all 0.2s ease-in-out;
+  color: white;
+  background-repeat: no-repeat;
+  width: 45px;
+  height: 51px;
+  line-height: 53px;
+  font-size: 1.5rem;
+  margin-left: 5px;
+}
+
+.options-button iconify-icon {
+  opacity: 0.8;
+  transition: all 0.2s ease-in-out;
+}
+
+.options-button:hover {
+  color: white;
+  background-image: url("assets/button-small--active.png");
+}
+
+.options-button:hover iconify-icon {
+  opacity: 1;
+}
+
 /* FOG */
 
 /* ---------- Fog ---------- */
@@ -400,14 +438,14 @@ ul {
 */
 #foglayer_01 .image01,
 #foglayer_01 .image02 {
-  background: url("https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/fog1.png") center center/cover no-repeat transparent;
+  background: url("assets/fog1.png") center center/cover no-repeat transparent;
 }
 
 #foglayer_02 .image01,
 #foglayer_02 .image02,
 #foglayer_03 .image01,
 #foglayer_03 .image02 {
-  background: url("https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/fog2.png") center center/cover no-repeat transparent;
+  background: url("assets/fog2.png") center center/cover no-repeat transparent;
 }
 
 /* ---------- Keyframe Layer 1 ---------- */
