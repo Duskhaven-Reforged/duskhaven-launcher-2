@@ -2,21 +2,20 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 extern crate serde_json;
 
-use reqwest::header::HeaderMap;
+// use reqwest::header::HeaderMap;
 // src-tauri/src/main.rs
-use hex;
-use hex::encode;
-use reqwest::{Client, RequestBuilder};
+// use hex::encode;
+use reqwest::Client;
 use ring::digest::{Context, Digest, SHA256};
 use serde::{Deserialize, Serialize};
 use std::io::{Error, Read};
-use std::path::Path;
+//use std::path::Path;
 use std::process::Command;
 use std::time::{Instant, SystemTime};
 use std::{fs, panic};
 use tauri::Manager;
 use tokio::fs::File;
-use tokio::io::{AsyncReadExt, AsyncWriteExt, BufReader, BufWriter};
+use tokio::io::{AsyncWriteExt, BufWriter};
 
 #[derive(Serialize)]
 pub struct Progress {

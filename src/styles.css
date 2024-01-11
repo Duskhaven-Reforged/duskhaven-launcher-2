@@ -102,7 +102,7 @@ input {
 
 @media (prefers-color-scheme: dark) {
   :root {
-    color: #f6f6f6;
+    color: var(--light);
     background-color: #000000;
   }
 
@@ -383,7 +383,7 @@ ul {
   background-image: url("assets/button-small.png");
   background-size: contain;
   transition: all 0.2s ease-in-out;
-  color: white;
+  color: var(--light);
   background-repeat: no-repeat;
   width: 45px;
   height: 51px;
@@ -403,7 +403,7 @@ ul {
 }
 
 .options-button:hover {
-  color: white;
+  color: var(--light);
   background-image: url("assets/button-small--active.png");
 }
 

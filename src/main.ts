@@ -16,12 +16,14 @@ enum ButtonStates {
 //let newsListEl: HTMLElement | null;
 let animcontainer: HTMLElement | null;
 let installDirectory = localStorage.getItem("installDirectory");
+let autoPlay = !!localStorage.getItem("autoPlay");
 let patches: Array<Patch>;
 let downloadArray: Array<Patch> = [];
 const url = import.meta.env.VITE_FILESERVER_URL;
 //const key = import.meta.env.VITE_ACCESS_KEY;
 const playSound = new Audio("/audio/play.wav");
 const playButton: HTMLButtonElement = document.getElementById("play-button") as HTMLButtonElement;
+const autoPlayCheck: HTMLInputElement = document.getElementById("autoplay") as HTMLInputElement;
 const statusText = playButton?.querySelector(".status-text");
 const dlProgress: HTMLElement | null =
   document.querySelector(".download-progress");
@@ -39,9 +41,9 @@ window.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("animation-toggle")
     ?.addEventListener("click", toggleAnimation);
-
+  document.getElementById("autoplay")?.addEventListener("change",setAutoPlay);
   hasInstallDirectory();
-
+  autoPlayCheck.checked = autoPlay;
   document.getElementById("titlebar-dir")?.addEventListener("click", setInstallDirectory)
   playButton?.addEventListener("click", handlePlayButton);
 });
@@ -98,6 +100,10 @@ function toggleAnimation(e: MouseEvent) {
   }
 }
 
+function setAutoPlay(e: any) {
+  localStorage.setItem("autoPlay", e.target.checked)
+}
+
 // listen for progress updates
 listen("DOWNLOAD_PROGRESS", (event) => {
   const progress: any = event.payload;
@@ -111,7 +117,12 @@ listen("DOWNLOAD_PROGRESS", (event) => {
 // listen for download finished
 listen("DOWNLOAD_FINISHED", (event: { payload: Progress }) => {
   if (event?.payload.download_id === downloadArray.length - 1) {
-    setButtonState(ButtonStates.PLAY, false);
+    if(autoPlayCheck.checked) {
+      startGame();
+    } else {
+      setButtonState(ButtonStates.PLAY, false);
+    }
+    
   }
 });
 
@@ -185,10 +196,10 @@ async function fetchPatches() {
     dlText!.innerHTML = `ready to play`;
     setButtonState(ButtonStates.PLAY, false);
   }
-  else if (downloadArray.length === patches.length) {
-    dlText!.innerHTML = `press download to install the custom duskhaven patches`;
-    setButtonState(ButtonStates.DOWNLOAD, false);
-  }
+  // else if (downloadArray.length === patches.length) {
+  //   dlText!.innerHTML = `press download to install the custom duskhaven patches`;
+  //   setButtonState(ButtonStates.DOWNLOAD, false);
+  // }
   else {
     dlText!.innerHTML = `there is an update available, please press upda  te to get the new patches`;
     setButtonState(ButtonStates.UPDATE, false);
