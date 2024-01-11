@@ -109,9 +109,9 @@ listen("DOWNLOAD_PROGRESS", (event) => {
   const progress: any = event.payload;
 
   dlProgress!.style!.width = `${progress.percentage}%`;
-  dlText!.innerHTML = `download progress: ${downloadArray[progress.download_id].ObjectName} ${progress.percentage.toFixed(
+  dlText!.innerHTML = `downloading ${downloadArray[progress.download_id].ObjectName} ${progress.percentage.toFixed(
     2
-  )}% (${(progress.transfer_rate / 1000 / 1000).toFixed(2)} megabytes/sec)`;
+  )}% (${(progress.transfer_rate / 1000 / 1000).toFixed(2)} MB/sec)`;
 });
 
 // listen for download finished
@@ -201,7 +201,7 @@ async function fetchPatches() {
   //   setButtonState(ButtonStates.DOWNLOAD, false);
   // }
   else {
-    dlText!.innerHTML = `there is an update available, please press upda  te to get the new patches`;
+    dlText!.innerHTML = `there is an update available`;
     setButtonState(ButtonStates.UPDATE, false);
   }
 
