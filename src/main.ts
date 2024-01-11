@@ -243,7 +243,7 @@ async function getNews() {
     let formattedDate = [month, day, year].join('/');
     console.log(newsItem);
     const newsNode = document.createElement("li");
-    newsNode.innerHTML = `<a class="row" target="_blank" href="https://www.duskhaven.net/blog/${newsItem.id}"><div class="news_title"> ${newsItem.attributes.Title} </div><div class="news_date">${formattedDate}</div></a>`;
+    newsNode.innerHTML = `<a class="row" target="_blank" href="https://www.duskhaven.net/blog/${newsItem.id}"><div class="news_title"><span class="news_category ${newsItem.attributes.Category}">[${newsItem.attributes.Category}]</span> ${newsItem.attributes.Title} </div><div class="news_date">${formattedDate}</div></a>`;
     newsList.appendChild(newsNode);
   });
 

@@ -8,9 +8,6 @@
 
 }
 
-
-
-
 @font-face {
   font-family: 'constantinebold';
   src: url('fonts/constantine_bold-webfont.woff2') format('woff2'),
@@ -45,6 +42,9 @@
   --darkBlue: #1f2d4d;
   --blue: #436193;
   --greyBlue: #2b3b4d;
+  --orange: #edc464;
+  --red: #ce2028;
+  --lightBlue: #baf3fc;
 }
 
 html {
@@ -266,7 +266,7 @@ ul {
 }
 .download-text {
   margin-bottom: 5px;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Open Sans', sans-serif;
 }
 .button--big {
   margin-top: 37%;
@@ -376,7 +376,7 @@ ul {
   height: 16px;
   margin: 2px;
   overflow: hidden;
-  background: #edc464;
+  background: var(--orange);
   clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0 50%);
 }
  #newslist{
@@ -405,7 +405,7 @@ ul {
   left: -2px;
   position: absolute;
   opacity: 0.6;
-  background: #edc464;
+  background: var(--orange);
   width: calc(100% + 4px);
   height: calc(258px + 4px);
   clip-path: polygon(1% 1%, 48% 1%, 50% 0, 52% 1%, 99% 1%, 99% 37%, 100% 40%, 99% 43%, 99% 99%, 52% 99%, 50% 100%, 48% 99%, 1% 99%, 1% 43%, 0 40%, 1% 37%);
@@ -417,10 +417,9 @@ ul {
 }
 
 #newslist li a {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Open Sans', sans-serif;
   color: var(--light);
   text-decoration: none;
-  text-transform: lowercase;
   padding: 10px 15px;
   justify-content: space-between;
   align-items: center;
@@ -430,10 +429,29 @@ ul {
   text-decoration: underline;
 }
 
-#newslist li a .title {
+#newslist li a .news_title {
+  text-align: left;
+  flex:1;
 }
 
-#newslist li a .date {
+#newslist li a .news_title .Announcement{
+  color: var(--orange)
+}
+
+#newslist li a .news_title .Maintenance {
+  color: var(--red)
+}
+
+#newslist li a .news_title .DevBlog {
+  color: var(--lightBlue)
+}
+
+
+
+#newslist li a .news_date {
+  flex: 0;
+  font-weight: 300;
+  opacity: 0.8;
 }
 
 #newslist li:first-child {
