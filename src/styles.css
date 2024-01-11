@@ -1,5 +1,27 @@
+
+@font-face {
+  font-family: 'constantineregular';
+  src: url('fonts/constantine-webfont.woff2') format('woff2'),
+       url('fonts/constantine-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+
+
+
+@font-face {
+  font-family: 'constantinebold';
+  src: url('fonts/constantine_bold-webfont.woff2') format('woff2'),
+       url('fonts/constantine_bold-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+
+}
+
 :root {
-  font-family: 'Playfair', serif;
+  font-family: 'constantineregular', serif;
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
@@ -307,9 +329,10 @@ ul {
 .button {
   text-transform: uppercase;
   font-size: 15px;
-  font-family: 'Playfair', serif;
+  font-family: 'constantineregular' !important;
   background-color: transparent;
 }
+
 
 .button::first-letter {
   font-size: 20px;
@@ -367,6 +390,11 @@ ul {
   line-height: 53px;
   font-size: 1.5rem;
   margin-left: 5px;
+}
+
+
+#play-button {
+  font-family: 'constantinebold' !important;
 }
 
 .options-button iconify-icon {

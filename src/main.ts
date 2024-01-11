@@ -23,9 +23,12 @@ const url = import.meta.env.VITE_FILESERVER_URL;
 const playSound = new Audio("/audio/play.wav");
 const playButton: HTMLButtonElement = document.getElementById("play-button") as HTMLButtonElement;
 const statusText = playButton?.querySelector(".status-text");
+const dlProgress: HTMLElement | null =
+  document.querySelector(".download-progress");
+const dlText: HTMLElement | null = document.querySelector(
+  ".download-container .text-center"
+);
 window.addEventListener("DOMContentLoaded", () => {
-
-
   //getNews();
   document
     .getElementById("titlebar-minimize")
@@ -48,7 +51,7 @@ async function hasInstallDirectory() {
   if (!installDirectory) {
     const yes = await ask('no install directory set want to set one now?', 'Duskhaven');
     if (!yes) {
-      installDirectory = appdir;
+      installDirectory = appdir
       localStorage.setItem("installDirectory", appdir)
       await message(`Ok if you press download we will download this in the current directory ${appdir}`, 'Duskhaven');
       return;
@@ -59,6 +62,7 @@ async function hasInstallDirectory() {
   }
   fetchPatches();
 }
+
 async function setInstallDirectory() {
   const appdir = await appDataDir();
 
@@ -97,11 +101,7 @@ function toggleAnimation(e: MouseEvent) {
 // listen for progress updates
 listen("DOWNLOAD_PROGRESS", (event) => {
   const progress: any = event.payload;
-  const dlProgress: HTMLElement | null =
-    document.querySelector(".download-progress");
-  const dlText: HTMLElement | null = document.querySelector(
-    ".download-container .text-center"
-  );
+
   dlProgress!.style!.width = `${progress.percentage}%`;
   dlText!.innerHTML = `download progress: ${downloadArray[progress.download_id].ObjectName} ${progress.percentage.toFixed(
     2
@@ -110,13 +110,12 @@ listen("DOWNLOAD_PROGRESS", (event) => {
 
 // listen for download finished
 listen("DOWNLOAD_FINISHED", (event: { payload: Progress }) => {
-  console.log("Download finished", event.payload);
   if (event?.payload.download_id === downloadArray.length - 1) {
     setButtonState(ButtonStates.PLAY, false);
   }
 });
+
 async function startGame() {
-  console.log("we goin");
   playAudio();
   invoke('open_app', { path: `${installDirectory}/dusk-wow.exe` })
     .then(message => console.log(message))
@@ -164,9 +163,10 @@ async function handlePlayButton() {
 async function fetchPatches() {
   try {
     patches = await invoke('get_patches');
-    console.log(patches);
+    dlText!.innerHTML = `getting patch info`;
   } catch (error) {
-    console.error('Failed to fetch patches:', error);
+    dlText!.innerHTML = `there seems to be a problem getting the patches: ${error}`
+    //console.error('Failed to fetch patches:', error);
   }
   downloadArray = [];
   for (const patch of patches) {
@@ -182,15 +182,18 @@ async function fetchPatches() {
     }
   }
   if (downloadArray.length === 0) {
+    dlText!.innerHTML = `ready to play`;
     setButtonState(ButtonStates.PLAY, false);
   }
   else if (downloadArray.length === patches.length) {
+    dlText!.innerHTML = `press download to install the custom duskhaven patches`;
     setButtonState(ButtonStates.DOWNLOAD, false);
   }
   else {
+    dlText!.innerHTML = `there is an update available, please press upda  te to get the new patches`;
     setButtonState(ButtonStates.UPDATE, false);
   }
-  console.log(downloadArray);
+
 }
 
 function setButtonState(state: ButtonStates, disabled: boolean) {
