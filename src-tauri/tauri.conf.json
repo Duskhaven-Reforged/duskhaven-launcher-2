@@ -52,6 +52,9 @@
       }
     },
     "bundle": {
+      "appimage": {
+        "bundleMediaFramework": true
+      },
       "active": true,
       "icon": [
         "icons/32x32.png",
