@@ -5,6 +5,7 @@ import { listen } from "@tauri-apps/api/event";
 import { Patch, Progress } from "./patch";
 import { open, ask, message } from '@tauri-apps/api/dialog';
 import { appDataDir } from '@tauri-apps/api/path';
+import { getClient, ResponseType } from '@tauri-apps/api/http';
 
 
 enum ButtonStates {
@@ -31,7 +32,7 @@ const dlText: HTMLElement | null = document.querySelector(
   ".download-container .text-center"
 );
 window.addEventListener("DOMContentLoaded", () => {
-  //getNews();
+  getNews();
   document
     .getElementById("titlebar-minimize")
     ?.addEventListener("click", () => appWindow.minimize());
@@ -41,7 +42,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("animation-toggle")
     ?.addEventListener("click", toggleAnimation);
-  document.getElementById("autoplay")?.addEventListener("change",setAutoPlay);
+  document.getElementById("autoplay")?.addEventListener("change", setAutoPlay);
   hasInstallDirectory();
   autoPlayCheck.checked = autoPlay;
   document.getElementById("titlebar-dir")?.addEventListener("click", setInstallDirectory)
@@ -117,12 +118,12 @@ listen("DOWNLOAD_PROGRESS", (event) => {
 // listen for download finished
 listen("DOWNLOAD_FINISHED", (event: { payload: Progress }) => {
   if (event?.payload.download_id === downloadArray.length - 1) {
-    if(autoPlayCheck.checked) {
+    if (autoPlayCheck.checked) {
       startGame();
     } else {
       setButtonState(ButtonStates.PLAY, false);
     }
-    
+
   }
 });
 
@@ -213,39 +214,41 @@ function setButtonState(state: ButtonStates, disabled: boolean) {
     statusText.innerHTML = state;
 }
 
-// async function getNews() {
-//   const response = await fetch("https://duskhaven-news.glitch.me/changelog", { method: "GET", headers });
-//   if (response.ok) {
-//     const newsContainer = document.getElementById('newslist');
-//     const data = await response.json();
-//     data.forEach((newsItem: any) => {
-//       let sanitized = newsItem["content"];
-//       sanitized = sanitized.replace(/@(everyone|here)/g, "To all users");
+async function getNews() {
+  const newsList: HTMLElement = document.getElementById("newslist") as HTMLElement;
+  const client = await getClient();
+  const options = {
+    headers: {
+      'Authorization': `Bearer ${import.meta.env.VITE_STRAPPI_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    responseType: ResponseType.JSON
+  };
 
-//       // Replace **text** with "text"
-//       sanitized = sanitized.replace(/\*{2}(.*?)\*{2}/g, "\$1");
-//       sanitized = sanitized.replace(/_{2}(.*?)_{2}/g, "\$1");
-//       sanitized = sanitized.replace(/<.*>/g, "");
-//       sanitized = sanitized.replace(/\n/g, "<br />");
-//       let channel = document.createElement("span");
-//       channel.innerHTML = newsItem["channelName"] + ":<br />";
-//       channel.style.fontWeight = "bold";
-//       let content = document.createElement("span");
-//       content.style.fontWeight = "normal";
-//       content.innerHTML = sanitized + ":<br /><br />";
-//       var newLI = document.createElement('li');
+  const response = await client.get(`${import.meta.env.VITE_STRAPPI_URL}/blogs?pagination[page]=1&pagination[7]=1&populate=* `, options);
+  const data: any = response.data;
+  console.log(data);
+  data.data.forEach((newsItem: any) => {
+    let date = new Date(newsItem.attributes.updatedAt);
 
-//       newLI.appendChild(channel).appendChild(content);
+    let month = '' + (date.getUTCMonth() + 1),
+      day = '' + date.getUTCDate(),
+      year = date.getUTCFullYear();
 
-//       newsContainer?.appendChild(newLI);
-//     });
+    if (month.length < 2)
+      month = '0' + month;
+    if (day.length < 2)
+      day = '0' + day;
 
-//     //newsListEl = document.querySelector("#newsList");
-//   } else {
+    let formattedDate = [month, day, year].join('/');
+    console.log(newsItem);
+    const newsNode = document.createElement("li");
+    newsNode.innerHTML = `<a class="row" target="_blank" href="https://www.duskhaven.net/blog/${newsItem.id}"><div class="news_title"> ${newsItem.attributes.Title} </div><div class="news_date">${formattedDate}</div></a>`;
+    newsList.appendChild(newsNode);
+  });
 
-//     console.error(`HTTP error: ${response.status}`);
-//   }
-// }
+  
+}
 
 function onKonamiCode(cb: Function) {
   var input = "";
