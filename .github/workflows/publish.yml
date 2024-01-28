@@ -26,10 +26,6 @@ jobs:
         with:
           node-version: 20
 
-      - name: Get the latest commit message
-          id: latestCommitMessage
-          run: echo "::set-output name=message::$(git log --format=%B -n 1)"
-
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
@@ -50,6 +46,6 @@ jobs:
         with:
           tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "Launcher v__VERSION__"
-          releaseBody: ${{ steps.latestCommitMessage.outputs.message }}
+          releaseBody: ${{ github.event.commits[0].message }}
           releaseDraft: true
           prerelease: false
