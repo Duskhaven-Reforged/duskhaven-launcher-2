@@ -1,0 +1,19 @@
+{
+    "version": "2.0.4",
+    "notes": "See the assets to download this version and install.",
+    "pub_date": "2024-01-28T12:46:07.967Z",
+    "platforms": {
+      "darwin-x86_64": {
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTT1UydkhyZHVwWkIwZXhhcDRTamJYMy90ZTNzVEpQWENlWVJCdVBpaWpxeVJieHJoQW1XQ0Y3UHRjckhrbVVRODErQXl6WjZkTTFVVldGOERleVdEWXNTampNeVEwemdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzA2NDQ1NDUyCWZpbGU6ZHVza2hhdmVuLWxhdW5jaGVyLmFwcC50YXIuZ3oKT1YrN21hbVdnU1FsUzNKR2d1VVZjdEtXbzRtRkt2eXp2YXg5M2wrNWlOUVZyUjBvK0tyeWxjd3VYM1RQSkNKNGhwdmxzRFdaUzBZSDRtbEdjdWRZQlE9PQo=",
+        "url": "https://github.com/laurensmarcelis/duskhaven-launcher-2/releases/download/v2.0.4/duskhaven-launcher_x64.app.tar.gz"
+      },
+      "linux-x86_64": {
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTT1UydkhyZHVwWkJlVUh3OTVzYjQrWmQyVEc4WFBUVVVBTVBvU24vVFllbis2RnNKNnVIUEM4VEU4OThJRkVQc3NENERrVTlZQWQwbFBNdG9ka3BKR2k3UEFRbjc5cmdNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzA2NDQ1NzczCWZpbGU6ZHVza2hhdmVuLWxhdW5jaGVyXzIuMC40X2FtZDY0LkFwcEltYWdlLnRhci5negpWVDZkUzJ4ZERNVU1NaXJhREEzZkM0VVBuemtvcHd2aUp2RjNwaEtFL3lubzcxdHMvbHlOQUFMMjN6VXVCV29GUEU0Mk83Wmpib0lzRXVhNGVzdjhEQT09Cg==",
+        "url": "https://github.com/laurensmarcelis/duskhaven-launcher-2/releases/download/v2.0.4/duskhaven-launcher_2.0.4_amd64.AppImage.tar.gz"
+      },
+      "windows-x86_64": {
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTT1UydkhyZHVwWkNFVzJDMTYxb3Rhb25VanQ4QnBRdVhPRElWQmlkZXJpaFBjTXdiRkZobXBnU2lmTElsZzRYTThEOVY5T0REUkVNVkdJRHZzMDUxOUdxQStSRGprZ2dBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzA2NDQ1OTYzCWZpbGU6ZHVza2hhdmVuLWxhdW5jaGVyXzIuMC40X3g2NF9lbi1VUy5tc2kuemlwCkwybTlUODZMNDIyNDdvclZCTXJ1a09HODA3REpiZUJFVjdOWFJHNGJYTWt1QmwwWTVZT0J2bXFCSkt0YTdVY1N3QkVobks2bFhNa09OYVBqMlBnaEJnPT0K",
+        "url": "https://github.com/laurensmarcelis/duskhaven-launcher-2/releases/download/v2.0.4/duskhaven-launcher_2.0.4_x64_en-US.msi.zip"
+      }
+    }
+  }
