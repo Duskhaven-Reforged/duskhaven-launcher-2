@@ -33,7 +33,7 @@ const dlText: HTMLElement | null = document.querySelector(
   ".download-container .text-center"
 );
 window.addEventListener("DOMContentLoaded", () => {
-  getNews();
+  
   document
     .getElementById("titlebar-minimize")
     ?.addEventListener("click", () => appWindow.minimize());
@@ -48,6 +48,7 @@ window.addEventListener("DOMContentLoaded", () => {
   autoPlayCheck.checked = autoPlay;
   directorySelector?.addEventListener("click", setInstallDirectory)
   playButton?.addEventListener("click", handlePlayButton);
+  getNews();
 });
 
 async function hasInstallDirectory() {
@@ -229,7 +230,6 @@ async function getNews() {
 
   const response = await client.get(`${import.meta.env.VITE_STRAPPI_URL}/blogs?pagination[page]=1&pagination[7]=1&populate=* `, options);
   const data: any = response.data;
-  console.log(data);
   data.data.forEach((newsItem: any) => {
     let date = new Date(newsItem.attributes.updatedAt);
 
@@ -243,7 +243,6 @@ async function getNews() {
       day = '0' + day;
 
     let formattedDate = [month, day, year].join('/');
-    console.log(newsItem);
     const newsNode = document.createElement("li");
     newsNode.innerHTML = `<a class="row" target="_blank" href="https://www.duskhaven.net/blog/${newsItem.id}"><div class="news_title"><span class="news_category ${newsItem.attributes.Category}">[${newsItem.attributes.Category}]</span> ${newsItem.attributes.Title} </div><div class="news_date">${formattedDate}</div></a>`;
     newsList.appendChild(newsNode);
