@@ -20,8 +20,7 @@ let installDirectory = localStorage.getItem("installDirectory");
 let autoPlay = !!localStorage.getItem("autoPlay");
 let patches: Array<Patch>;
 let downloadArray: Array<Patch> = [];
-const url = import.meta.env.VITE_FILESERVER_URL;
-//const key = import.meta.env.VITE_ACCESS_KEY;
+const url = process.env.VITE_FILESERVER_URL || import.meta.env.VITE_FILESERVER_URL;
 const playSound = new Audio("/audio/play.wav");
 const playButton: HTMLButtonElement = document.getElementById("play-button") as HTMLButtonElement;
 const autoPlayCheck: HTMLInputElement = document.getElementById("autoplay") as HTMLInputElement;
@@ -33,7 +32,7 @@ const dlText: HTMLElement | null = document.querySelector(
   ".download-container .text-center"
 );
 window.addEventListener("DOMContentLoaded", () => {
-  
+
   document
     .getElementById("titlebar-minimize")
     ?.addEventListener("click", () => appWindow.minimize());
@@ -222,13 +221,13 @@ async function getNews() {
   const client = await getClient();
   const options = {
     headers: {
-      'Authorization': `Bearer ${import.meta.env.VITE_STRAPPI_TOKEN}`,
+      'Authorization': `Bearer ${process.env.VITE_STRAPPI_TOKEN || import.meta.env.VITE_STRAPPI_TOKEN}`,
       'Content-Type': 'application/json'
     },
     responseType: ResponseType.JSON
   };
 
-  const response = await client.get(`${import.meta.env.VITE_STRAPPI_URL}/blogs?pagination[page]=1&pagination[7]=1&populate=* `, options);
+  const response = await client.get(`${process.env.VITE_STRAPPI_URL || import.meta.env.VITE_STRAPPI_URL}/blogs?pagination[page]=1&pagination[7]=1&populate=* `, options);
   const data: any = response.data;
   data.data.forEach((newsItem: any) => {
     let date = new Date(newsItem.attributes.updatedAt);
