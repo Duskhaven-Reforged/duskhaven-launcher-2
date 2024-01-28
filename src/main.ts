@@ -192,7 +192,7 @@ async function fetchPatches() {
         await downloadArray.push(patch);
       }
     } catch (error) {
-      await message(`an error occurred!' ${error}`, { title: 'Error', type: 'error' })
+      console.log(error);
       await downloadArray.push(patch);
     }
   }
