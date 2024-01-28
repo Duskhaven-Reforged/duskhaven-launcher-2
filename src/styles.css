@@ -125,6 +125,11 @@ input {
   display: flex;
 }
 
+.titlebar img{
+  width: 75px;
+  pointer-events: none;
+}
+
 
 #animation-toggle {
   position: absolute;

@@ -28,6 +28,7 @@ const autoPlayCheck: HTMLInputElement = document.getElementById("autoplay") as H
 const statusText = playButton?.querySelector(".status-text");
 const dlProgress: HTMLElement | null =
   document.querySelector(".download-progress");
+const directorySelector = document.getElementById("titlebar-dir");
 const dlText: HTMLElement | null = document.querySelector(
   ".download-container .text-center"
 );
@@ -45,7 +46,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("autoplay")?.addEventListener("change", setAutoPlay);
   hasInstallDirectory();
   autoPlayCheck.checked = autoPlay;
-  document.getElementById("titlebar-dir")?.addEventListener("click", setInstallDirectory)
+  directorySelector?.addEventListener("click", setInstallDirectory)
   playButton?.addEventListener("click", handlePlayButton);
 });
 
@@ -67,6 +68,9 @@ async function hasInstallDirectory() {
 }
 
 async function setInstallDirectory() {
+  if(playButton.disabled) {
+    return;
+  }
   const appdir = await appDataDir();
 
   const selected = await open({
@@ -120,10 +124,8 @@ listen("DOWNLOAD_FINISHED", (event: { payload: Progress }) => {
   if (event?.payload.download_id === downloadArray.length - 1) {
     if (autoPlayCheck.checked) {
       startGame();
-    } else {
-      setButtonState(ButtonStates.PLAY, false);
     }
-
+    setButtonState(ButtonStates.PLAY, false);
   }
 });
 
