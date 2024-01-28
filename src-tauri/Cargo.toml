@@ -1,6 +1,6 @@
 [package]
 name = "duskhaven-launcher"
-version = "2.0.5"
+version = "2.0.6"
 description = "Launcher for duskhaven wow server"
 authors = ["you"]
 license = ""
