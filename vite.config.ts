@@ -13,6 +13,9 @@ export default defineConfig(async () => ({
   // to make use of `TAURI_DEBUG` and other env variables
   // https://tauri.studio/v1/api/config#buildconfig.beforedevcommand
   envPrefix: ["VITE_", "TAURI_"],
+  define: {
+    'process.env': process.env
+  },
   build: {
     // Tauri supports es2021
     target: 'esnext',

@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "duskhaven-launcher",
-    "version": "2.0.10"
+    "version": "2.0.11"
   },
   "tauri": {
     "allowlist": {

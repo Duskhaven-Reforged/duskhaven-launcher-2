@@ -21,11 +21,10 @@ jobs:
     steps:
       - name: set env variables
         run: |
-          touch .env
-          echo "VITE_ACCESS_KEY=${{ secrets.VITE_ACCESS_KEY }}" >> .env
-          echo "VITE_FILESERVER_URL=${{ secrets.VITE_FILESERVER_URL }}" >> .env
-          echo "VITE_STRAPPI_URL=${{ secrets.VITE_STRAPPI_URL }}" >> .env
-          echo "VITE_STRAPPI_TOKEN=${{ secrets.VITE_STRAPPI_TOKEN }}" >> .env
+          echo "VITE_ACCESS_KEY=${{ secrets.VITE_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "VITE_FILESERVER_URL=${{ secrets.VITE_FILESERVER_URL }}" >> $GITHUB_ENV
+          echo "VITE_STRAPPI_URL=${{ secrets.VITE_STRAPPI_URL }}" >> $GITHUB_ENV
+          echo "VITE_STRAPPI_TOKEN=${{ secrets.VITE_STRAPPI_TOKEN }}" >> $GITHUB_ENV
 
       - uses: actions/checkout@v4
 
