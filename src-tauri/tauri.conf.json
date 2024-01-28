@@ -72,7 +72,7 @@
     "updater": {
       "active": true,
       "endpoints": [
-        ""
+        "https://github.com/laurensmarcelis/duskhaven-launcher-2/releases/latest"
       ],
       "dialog": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI2REE5NDRBRjY1NTU3MjgKUldRb1YxWDJTcFRhSnQ0SkFmS2JoeWNxMlMyRDdlMk13T2o0dU9tY1pVUG5QamxoeXRVOXdwZ0sK"
