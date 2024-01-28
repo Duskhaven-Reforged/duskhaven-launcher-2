@@ -181,7 +181,7 @@ async function fetchPatches() {
     dlText!.innerHTML = `getting patch info`;
   } catch (error) {
     dlText!.innerHTML = `there seems to be a problem getting the patches: ${error}`
-    message(`an error occurred!' ${error}`, { title: 'Error', type: 'error' })
+    await message(`an error occurred!' ${error}`, { title: 'Error', type: 'error' })
   }
   downloadArray = [];
   for (const patch of patches) {
@@ -192,7 +192,7 @@ async function fetchPatches() {
         await downloadArray.push(patch);
       }
     } catch (error) {
-      message(`an error occurred!' ${error}`, { title: 'Error', type: 'error' })
+      await message(`an error occurred!' ${error}`, { title: 'Error', type: 'error' })
       await downloadArray.push(patch);
     }
   }
