@@ -6,7 +6,7 @@ import { Patch, Progress } from "./patch";
 import { open, ask, message } from '@tauri-apps/api/dialog';
 import { appDataDir } from '@tauri-apps/api/path';
 import { getClient, ResponseType } from '@tauri-apps/api/http';
-
+import { onUpdaterEvent } from '@tauri-apps/api/updater';
 
 enum ButtonStates {
   PLAY = "Play",
@@ -134,7 +134,7 @@ async function startGame() {
   playAudio();
   invoke('open_app', { path: `${installDirectory}/dusk-wow.exe` })
     .then(message => console.log(message))
-    .catch(error => console.error(error))
+    .catch(error => message(`an error occurred!' ${error}`, { title: 'Error', type: 'error' }))
 }
 async function downloadFiles() {
   //playAudio();
@@ -155,7 +155,7 @@ async function downloadFiles() {
       })
       .catch((err) => {
         setButtonState(ButtonStates.UPDATE, false);
-        console.error("Failed to start download:", err);
+        message(`an error occurred!' ${err}`, { title: 'Error', type: 'error' })
       });
   }
   else {
@@ -181,7 +181,7 @@ async function fetchPatches() {
     dlText!.innerHTML = `getting patch info`;
   } catch (error) {
     dlText!.innerHTML = `there seems to be a problem getting the patches: ${error}`
-    //console.error('Failed to fetch patches:', error);
+    message(`an error occurred!' ${error}`, { title: 'Error', type: 'error' })
   }
   downloadArray = [];
   for (const patch of patches) {
@@ -192,7 +192,7 @@ async function fetchPatches() {
         await downloadArray.push(patch);
       }
     } catch (error) {
-      console.log(error);
+      message(`an error occurred!' ${error}`, { title: 'Error', type: 'error' })
       await downloadArray.push(patch);
     }
   }
@@ -272,3 +272,12 @@ function playAudio() {
   playSound.volume = 0.5;
   playSound.play();
 }
+
+
+
+
+const unlisten = await onUpdaterEvent(({ error, status }) => {
+ console.log('Updater event', error, status);
+});
+
+unlisten();
