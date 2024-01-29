@@ -1,4 +1,3 @@
-// import { invoke } from "@tauri-apps/api/tauri";
 import { appWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen } from "@tauri-apps/api/event";
@@ -6,15 +5,12 @@ import { Patch, Progress } from "./patch";
 import { open, ask, message } from '@tauri-apps/api/dialog';
 import { appDataDir } from '@tauri-apps/api/path';
 import { getClient, ResponseType } from '@tauri-apps/api/http';
-import { onUpdaterEvent } from '@tauri-apps/api/updater';
 
 enum ButtonStates {
   PLAY = "Play",
   DOWNLOAD = "Download",
   UPDATE = "Update",
 }
-
-//let newsListEl: HTMLElement | null;
 let animcontainer: HTMLElement | null;
 let installDirectory = localStorage.getItem("installDirectory");
 let autoPlay = !!localStorage.getItem("autoPlay");
@@ -271,12 +267,3 @@ function playAudio() {
   playSound.volume = 0.5;
   playSound.play();
 }
-
-
-
-
-const unlisten = await onUpdaterEvent(({ error, status }) => {
- console.log('Updater event', error, status);
-});
-
-unlisten();

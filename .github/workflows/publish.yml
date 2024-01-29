@@ -19,13 +19,6 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - name: set env variables
-        run: |
-          echo "VITE_ACCESS_KEY=${{ secrets.VITE_ACCESS_KEY }}" >> $GITHUB_ENV
-          echo "VITE_FILESERVER_URL=${{ secrets.VITE_FILESERVER_URL }}" >> $GITHUB_ENV
-          echo "VITE_STRAPPI_URL=${{ secrets.VITE_STRAPPI_URL }}" >> $GITHUB_ENV
-          echo "VITE_STRAPPI_TOKEN=${{ secrets.VITE_STRAPPI_TOKEN }}" >> $GITHUB_ENV
-
       - uses: actions/checkout@v4
 
       - name: setup node
@@ -50,10 +43,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          VITE_ACCESS_KEY: ${{ secrets.VITE_ACCESS_KEY }}
+          VITE_FILESERVER_URL: ${{ secrets.VITE_FILESERVER_URL }}
+          VITE_STRAPPI_URL: ${{ secrets.VITE_STRAPPI_URL }}
+          VITE_STRAPPI_TOKEN: ${{ secrets.VITE_STRAPPI_TOKEN }}
         with:
           tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "Launcher v__VERSION__"
           releaseBody: ${{ github.event.commits[0].message }}
           releaseDraft: true
           prerelease: false
-          args: --env VITE_ACCESS_KEY=${{ secrets.VITE_ACCESS_KEY }} --env VITE_FILESERVER_URL=${{ secrets.VITE_FILESERVER_URL }} --env VITE_STRAPPI_URL=${{ secrets.VITE_STRAPPI_URL }} --env VITE_STRAPPI_TOKEN=${{ secrets.VITE_STRAPPI_TOKEN }}
