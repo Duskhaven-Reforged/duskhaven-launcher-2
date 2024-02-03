@@ -24,6 +24,7 @@
   --blue: #436193;
   --greyBlue: #2b3b4d;
   --orange: #edc464;
+  --green: #526f24;
   --red: #ce2028;
   --lightBlue: #baf3fc;
 }
@@ -68,6 +69,10 @@ main,
 footer {
   position: relative;
   z-index: 1;
+}
+
+header {
+  background-color: var(--dark);
 }
 
 main {
@@ -292,6 +297,7 @@ ul {
   margin-bottom: 5px;
   font-family: 'Playfair Display', serif;
   align-items: baseline;
+  margin-bottom: 10px;
 }
 
 .download-text .percent {
@@ -380,16 +386,15 @@ ul {
 
 .options {
   background: rgb(14, 13, 18);
-  background: linear-gradient(0deg, rgba(14, 13, 18, 0.25) 31%, rgba(14, 13, 18, 0.5) 100%);
-  padding: 30px 0;
+  background: linear-gradient(0deg, rgba(14, 13, 18, 0.5) 31%, rgba(14, 13, 18, 0.75) 100%);
+  padding: 20px 0;
 }
 
 .options a {
   color: var(--light);
-  padding: 10px;
-  margin-right: 10px;
   text-decoration: none;
   opacity: 0.8;
+  font-size: 1.2rem;
   transition: all 0.2s ease-in-out;
 }
 
@@ -475,7 +480,7 @@ ul {
 
 
 #newslist li a .news_title .Announcement {
-  background-color: var(--orange);
+  background-color: var(--green);
   color: var(--light);
 }
 

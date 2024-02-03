@@ -64,11 +64,11 @@ async function hasInstallDirectory() {
   }
   fetchPatches();
 }
-async function setAccountDetails(username: string, password: string) {
-  invoke('update_account_info', {installDirectory, username, password})
-    .then(value => console.log("success", value))
-    .catch(error => console.log(error));
-}
+// async function setAccountDetails(username: string, password: string) {
+//   invoke('update_account_info', {installDirectory, username, password})
+//     .then(value => console.log("success", value))
+//     .catch(error => console.log(error));
+// }
 async function setInstallDirectory() {
   if(playButton.disabled) {
     return;
