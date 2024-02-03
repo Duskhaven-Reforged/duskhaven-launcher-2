@@ -71,10 +71,6 @@ footer {
   z-index: 1;
 }
 
-header {
-  background-color: var(--dark);
-}
-
 main {
   height: 100%;
 }
@@ -141,7 +137,7 @@ input {
 }
 
 .titlebar img {
-  width: 75px;
+  width: 125px;
   pointer-events: none;
 }
 
