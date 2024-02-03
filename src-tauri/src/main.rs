@@ -10,6 +10,7 @@ use ring::digest::{Context, Digest, SHA256};
 use serde::{Deserialize, Serialize};
 use std::io::{Error, Read};
 //use std::path::Path;
+use regex::{Captures, Regex};
 use std::process::Command;
 use std::time::{Instant, SystemTime};
 use std::{fs, panic};
@@ -47,6 +48,9 @@ pub struct Patch {
     checksum: String,
     replicated_zones: String,
 }
+
+const KEY53: u64 = 8186484168865098;
+const KEY14: u64 = 4887;
 
 #[tauri::command]
 fn modified_time(file_path: String) -> Result<SystemTime, String> {
@@ -99,11 +103,75 @@ async fn get_patches() -> Result<Patches, String> {
 
 #[tauri::command]
 fn open_app(path: String) -> Result<String, String> {
-  let child = Command::new(path)
-    .spawn()
-    .map_err(|err| err.to_string())?;
+    let child = Command::new(path).spawn().map_err(|err| err.to_string())?;
 
-  Ok(format!("Application opened with PID {}", child.id()))
+    Ok(format!("Application opened with PID {}", child.id()))
+}
+
+#[tauri::command]
+fn update_account_info(
+    installDirectory: String,
+    username: String,
+    password: String,
+) -> Result<String, String> {
+    // Define the regex pattern
+    let file_path = format!("{}/WTF/Config.wtf", installDirectory);
+    let re = Regex::new(r#"(?m)^SET accountName .*$"#).unwrap();
+
+    // Read the file
+    let mut contents = match fs::read_to_string(&file_path) {
+        Ok(contents) => contents,
+        Err(e) => return Err(e.to_string()),
+    };
+
+    // Check if the line exists
+    if re.captures(&contents).is_none() {
+        // Append the line to the end of the file
+        contents.push_str(&format!("SET accountName \"{} {}\"\n", username, encode(&password)));
+    } else {
+        // Replace the matched line
+        contents = re
+            .replace(&contents, |caps: &Captures| {
+                format!("SET accountName \"{} {}\"", username, encode(&password))
+            })
+            .to_string();
+    }
+
+    // Write the new contents back to the file
+    match fs::write(&file_path, contents) {
+        Ok(_) => Ok(format!("Application opened with PID ")),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+fn inv256() -> Vec<u64> {
+    let mut inv256 = vec![0; 128];
+    for M in 0..128 {
+        let mut inv = 1;
+        loop {
+            inv += 2;
+            if inv * ((2 * M + 1) as u64) % 256 == 1 {
+                break;
+            }
+        }
+        inv256[M] = inv;
+    }
+    inv256
+}
+
+fn encode(str: &str) -> String {
+    let inv256 = inv256();
+    let mut K = KEY53;
+    let F = 16384 + KEY14;
+    str.chars().map(|m| {
+        let m = m as u64;
+        let L = K % 274877906944;
+        let H = (K - L) / 274877906944;
+        let M = H % 128;
+        let c = (m * inv256[M as usize] - (H - M as u64) / 128) % 256;
+        K = L * F + H + c + m;
+        format!("{:02x}", c)
+    }).collect()
 }
 
 #[tauri::command]
@@ -210,7 +278,8 @@ fn main() {
             download_files,
             get_patches,
             modified_time,
-            open_app
+            open_app,
+            update_account_info
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

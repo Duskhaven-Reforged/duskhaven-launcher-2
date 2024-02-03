@@ -10,86 +10,88 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@400;600;900&display=swap"
+    rel="stylesheet">
 
   <title>Duskhaven Launcher</title>
   <script type="module" src="/src/main.ts" defer></script>
+  <script type="module" src="/src/i18n.ts" defer></script>
 </head>
 
 <body data-tauri-drag-region>
-  <div data-tauri-drag-region class="titlebar">
-    <img src="img/logo.png">
-    <!-- <a  href="https://discord.gg/duskhaven" target="_blank" class="titlebar-button button--discord" id="titlebar-discord">
-    </a> -->
-    <!-- <iconify-icon class="titlebar-button button--folder" id="titlebar-dir" icon="mdi:folder"></iconify-icon> -->
-    <iconify-icon class="titlebar-button button--min" id="titlebar-minimize" icon="mdi:minus"></iconify-icon>
-    <iconify-icon class="titlebar-button button--close" id="titlebar-close" icon="ic:baseline-close"></iconify-icon>
+  <header>
+    <div data-tauri-drag-region class="titlebar">
+      <img src="img/logo.png">
+      <!-- <a  href="https://discord.gg/duskhaven" target="_blank" class="titlebar-button button--discord" id="titlebar-discord">
+      </a> -->
+      <!-- <iconify-icon class="titlebar-button button--folder" id="titlebar-dir" icon="mdi:folder"></iconify-icon> -->
+      <iconify-icon class="titlebar-button button--min" id="titlebar-minimize" icon="mdi:minus"></iconify-icon>
+      <iconify-icon class="titlebar-button button--close" id="titlebar-close" icon="ic:baseline-close"></iconify-icon>
 
-  </div>
-  </div>
-  <iconify-icon id="animation-toggle" icon="mdi:clapperboard-off-outline"></iconify-icon>
-  <div class="page-wrapper">
-
-    <div class="row">
-      <aside class="col-6">
-
-      </aside>
-      <main class="col-6 text-center">
-        <img class="text-logo" src="img/logo_text.png">
-
-      </main>
     </div>
-
-    <div class=" row">
-      <div class="col-6 text-center">
-        <h3 class="title">LATEST NEWS</h3>
+  </header>
+  <main>
+    <div class=" row main-content">
+      <div class="col-6">
         <div class="content">
-          <ul id="newslist">
+          <h3>Latest News</h3>
+          <!-- Content generated -->
+          <ul id="newslist"></ul>
+        </div>
 
-          </ul>
-        </div>
-        <div class="download-container">
-          <div class="">
-            <div class="text-center download-text">
-            </div>
-            <div class="download">
-              <div class="download-progress" style="width: 0%"></div>
-            </div>
-          </div>
-        </div>
       </div>
       <div class="col-6 text-center">
-        <h3 class="title">LAUNCH</h3>
+        <main class="col-6 text-center">
+          <img class="text-logo" src="img/logo_text.png">
+
+        </main>
+
+      </div>
+    </div>
+  </main>
+  <footer>
+    <div class=" options row">
+      <div class="col-12">
+        <a href="https://discord.gg/duskhaven" target="_blank"><iconify-icon icon="ic:baseline-discord"></iconify-icon>
+          Discord</a>
+        <a href="https://www.duskhaven.net/" target="_blank"><iconify-icon icon="bi:globe"></iconify-icon> Website</a>
+        <a href="#" id="titlebar-dir"><iconify-icon icon="mdi:folder"></iconify-icon> Install Folder </a>
+      </div>
+    </div>
+    <div class="download-container row">
+      <div class="col-9 download-prog">
+        <div class="text-center download-text">
+          <div class="percent"> 85.23%</div>
+          <div class="file">patch-Z.mpq </div>
+          <div class="speed">20MB/S</div>
+        </div>
+        <div class="download">
+          <div class="download-progress" style="width: 0%"></div>
+        </div>
+      </div>
+      <div class="col-3">
         <div>
           <button id="play-button" class="button--big" disabled><span class="status-text">download</span></button>
         </div>
         <div>
           <input type="checkbox" id="autoplay"><label for="autoplay">auto-play after download</label>
-        </div>
-        <div class="options">
-          <a class="options-button" TITLE="discord" href="https://discord.gg/duskhaven" target="_blank"><iconify-icon icon="ic:baseline-discord"></iconify-icon></a>
-          <a class="options-button" TITLE="website" href="https://www.duskhaven.net/" target="_blank"><iconify-icon icon="bi:globe"></iconify-icon></a>
-          <a class="options-button" id="titlebar-dir" TITLE="set install folder" target="_blank"><iconify-icon  icon="mdi:folder"></iconify-icon></a>
+
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="fogwrapper">
-    <div id="foglayer_01" class="fog">
-      <div class="image01"></div>
-      <div class="image02"></div>
-    </div>
-    <div id="foglayer_02" class="fog">
-      <div class="image01"></div>
-      <div class="image02"></div>
-    </div>
-    <div id="foglayer_03" class="fog">
-      <div class="image01"></div>
-      <div class="image02"></div>
-    </div>
-  </div>
+  </footer>
+
+  <!-- <iconify-icon id="animation-toggle" icon="mdi:clapperboard-off-outline"></iconify-icon> -->
+
+
+
 </body>
+
+<div class="focus">
+
+</div>
 
 </html>

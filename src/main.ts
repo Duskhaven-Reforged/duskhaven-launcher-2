@@ -5,6 +5,7 @@ import { Patch, Progress } from "./patch";
 import { open, ask, message } from '@tauri-apps/api/dialog';
 import { appDataDir } from '@tauri-apps/api/path';
 import { getClient, ResponseType } from '@tauri-apps/api/http';
+// import i18n from "./i18n";
 
 enum ButtonStates {
   PLAY = "Play",
@@ -13,7 +14,7 @@ enum ButtonStates {
 }
 let animcontainer: HTMLElement | null;
 let installDirectory = localStorage.getItem("installDirectory");
-let autoPlay = !!localStorage.getItem("autoPlay");
+let autoPlay = localStorage.getItem("autoPlay") === "true";
 let patches: Array<Patch>;
 let downloadArray: Array<Patch> = [];
 const url = process.env.VITE_FILESERVER_URL || import.meta.env.VITE_FILESERVER_URL;
@@ -38,12 +39,13 @@ window.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("animation-toggle")
     ?.addEventListener("click", toggleAnimation);
-  document.getElementById("autoplay")?.addEventListener("change", setAutoPlay);
-  hasInstallDirectory();
   autoPlayCheck.checked = autoPlay;
+  hasInstallDirectory();
+  document.getElementById("autoplay")?.addEventListener("change", setAutoPlay);
   directorySelector?.addEventListener("click", setInstallDirectory)
   playButton?.addEventListener("click", handlePlayButton);
   getNews();
+  //setAccountDetails("tittymilk", "bigdick");
 });
 
 async function hasInstallDirectory() {
@@ -62,7 +64,11 @@ async function hasInstallDirectory() {
   }
   fetchPatches();
 }
-
+async function setAccountDetails(username: string, password: string) {
+  invoke('update_account_info', {installDirectory, username, password})
+    .then(value => console.log("success", value))
+    .catch(error => console.log(error));
+}
 async function setInstallDirectory() {
   if(playButton.disabled) {
     return;
@@ -110,9 +116,7 @@ listen("DOWNLOAD_PROGRESS", (event) => {
   const progress: any = event.payload;
 
   dlProgress!.style!.width = `${progress.percentage}%`;
-  dlText!.innerHTML = `downloading ${downloadArray[progress.download_id].ObjectName} ${progress.percentage.toFixed(
-    2
-  )}% (${(progress.transfer_rate / 1000 / 1000).toFixed(2)} MB/sec)`;
+  dlText!.innerHTML = `<div class="percent"> ${progress.percentage.toFixed(2)}%</div><div class="file">${downloadArray[progress.download_id].ObjectName} </div>  <div class="speed">(${(progress.transfer_rate / 1000 / 1000).toFixed(2)} MB/sec)</div>`;
 });
 
 // listen for download finished
@@ -182,7 +186,6 @@ async function fetchPatches() {
   for (const patch of patches) {
     try {
       const timeStamp: { secs_since_epoch: number } = await invoke('modified_time', { filePath: `${installDirectory}/Data/${patch.ObjectName}` });
-      console.log((new Date(patch.LastChanged).getTime() / 1000) > timeStamp.secs_since_epoch);
       if (((new Date(patch.LastChanged).getTime() / 1000) > timeStamp.secs_since_epoch)) {
         await downloadArray.push(patch);
       }
@@ -239,7 +242,7 @@ async function getNews() {
 
     let formattedDate = [month, day, year].join('/');
     const newsNode = document.createElement("li");
-    newsNode.innerHTML = `<a class="row" target="_blank" href="https://www.duskhaven.net/blog/${newsItem.id}"><div class="news_title"><span class="news_category ${newsItem.attributes.Category}">[${newsItem.attributes.Category}]</span> ${newsItem.attributes.Title} </div><div class="news_date">${formattedDate}</div></a>`;
+    newsNode.innerHTML = `<a class="row" target="_blank" href="https://www.duskhaven.net/blog/${newsItem.id}"><div class="news_title"><span class="news_category ${newsItem.attributes.Category}">${newsItem.attributes.Category}</span> ${newsItem.attributes.Title} </div><div class="news_date">${formattedDate}</div></a>`;
     newsList.appendChild(newsNode);
   });
 

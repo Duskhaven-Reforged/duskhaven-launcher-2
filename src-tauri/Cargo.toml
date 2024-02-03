@@ -22,6 +22,7 @@ tauri-plugin-upload = { git = "https://github.com/tauri-apps/plugins-workspace",
 reqwest = "0.11"
 ring = "0.17.7"
 hex = "0.4.3"
+regex = "1.10.3"
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!

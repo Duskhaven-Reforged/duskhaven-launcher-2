@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "duskhaven-launcher",
-    "version": "2.0.15"
+    "version": "2.1.0"
   },
   "tauri": {
     "allowlist": {
@@ -83,13 +83,14 @@
         "fullscreen": false,
         "resizable": false,
         "title": "Duskhaven Launcher",
-        "width": 1125,
-        "height": 754,
+        "width": 1000,
+        "height": 600,
         "hiddenTitle": true,
-        "maxWidth": 1125,
-        "maxHeight": 754,
-        "minWidth": 1125,
-        "minHeight": 754
+        "maxWidth": 1000,
+        "maxHeight": 600,
+        "minWidth": 1000,
+        "minHeight": 600,
+        "transparent": true
       }
     ]
   }
