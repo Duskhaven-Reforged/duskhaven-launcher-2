@@ -24,7 +24,7 @@ const autoPlayCheck: HTMLInputElement = document.getElementById("autoplay") as H
 const statusText = playButton?.querySelector(".status-text");
 const dlProgress: HTMLElement | null =
   document.querySelector(".download-progress");
-const directorySelector = document.getElementById("titlebar-dir");
+const directorySelector: HTMLButtonElement = document.getElementById("titlebar-dir") as HTMLButtonElement;;
 const dlText: HTMLElement | null = document.querySelector(
   ".download-container .text-center"
 );
@@ -211,6 +211,7 @@ async function fetchPatches() {
 
 function setButtonState(state: ButtonStates, disabled: boolean) {
   playButton.disabled = disabled;
+  directorySelector.disabled = disabled;
   if (statusText)
     statusText.innerHTML = state;
 }

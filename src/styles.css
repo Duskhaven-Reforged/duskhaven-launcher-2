@@ -141,7 +141,6 @@ input {
   pointer-events: none;
 }
 
-
 #animation-toggle {
   position: absolute;
   top: 60px;
@@ -168,7 +167,6 @@ input {
   flex: 1;
   padding-top: var(--gutter);
 }
-
 
 .news-list {
   height: 100%;
@@ -228,12 +226,14 @@ ul {
   text-align: center;
 }
 
+.text-right {
+  text-align: right;
+}
+
 .text-logo {
   margin-top: 2rem;
   margin-left: 1rem;
 }
-
-
 
 .titlebar-button {
   position: absolute;
@@ -261,7 +261,6 @@ ul {
   background-position: -8px center;
   background-repeat: no-repeat;
 }
-
 
 .button {
   width: 103px;
@@ -309,6 +308,7 @@ ul {
 } */
 
 .button--big {
+  padding: 0;
   outline: 0;
   border: 0;
   background-color: transparent;
@@ -327,6 +327,33 @@ ul {
   left: 50%;
   box-shadow: 0 0 0 #ff2400AA;
   transition: all 0.2s ease-in-out;
+}
+
+.button-container {
+  display: flex;
+}
+
+.button-container .button--big:first-child {
+  width: 80%;
+}
+
+.button-container .button--big:last-child {
+  width: 20%;
+}
+.button-container .button--big:first-child span{
+  border-radius: 4px 0 0 4px;
+  background-position: 20% center;
+  height: 100%;
+}
+
+.button-container .button--big iconify-icon {
+  vertical-align: middle;
+}
+
+.button-container .button--big:last-child span{
+  border-radius: 0 4px 4px 0;
+  background-position: 54% center;
+  height: 100%;
 }
 
 .button--big:disabled {
@@ -349,7 +376,7 @@ ul {
   text-transform: uppercase;
   display: block;
   background-position: center;
-  border-radius: 4px;
+  
   background-image: url("assets/main-button.png");
   background-repeat: no-repeat;
   background-size: cover;
@@ -358,9 +385,7 @@ ul {
   position: relative;
   z-index: 1;
   transition: all 0.2s ease-in-out;
-
 }
-
 
 .button--big span:hover {
   text-shadow: 0px 0px 25px var(--lightTransparent);
@@ -474,7 +499,6 @@ ul {
   text-decoration: none;
 }
 
-
 #newslist li a .news_title .Announcement {
   background-color: var(--green);
   color: var(--light);
@@ -489,8 +513,6 @@ ul {
   background-color: var(--blue);
   color: var(--light);
 }
-
-
 
 #newslist li a .news_date {
   flex: 0;
