@@ -1,93 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
 
-<head>
-  <meta charset="UTF-8" />
+    <link rel="stylesheet" href="/src/reset.css" />
+    <link rel="stylesheet" href="/src/grid.css" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@400;600;900&display=swap"
+      rel="stylesheet"
+    />
 
-  <link rel="stylesheet" href="/src/reset.css" />
-  <link rel="stylesheet" href="/src/grid.css" />
-  <link rel="stylesheet" href="/src/styles.css" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@400;600;900&display=swap"
-    rel="stylesheet">
+    <title>Duskhaven Launcher</title>
+    <script type="module" src="/src/main.ts" defer></script>
+    <script type="module" src="/src/i18n.ts" defer></script>
+  </head>
 
-  <title>Duskhaven Launcher</title>
-  <script type="module" src="/src/main.ts" defer></script>
-  <script type="module" src="/src/i18n.ts" defer></script>
-</head>
-
-<body data-tauri-drag-region>
-  <header>
-    <div data-tauri-drag-region class="titlebar">
-      <img src="img/logo-transparent.png">
-      <!-- <a  href="https://discord.gg/duskhaven" target="_blank" class="titlebar-button button--discord" id="titlebar-discord">
+  <body data-tauri-drag-region>
+    <header>
+      <div data-tauri-drag-region class="titlebar">
+        <a href="./addons.html"><img src="img/logo-transparent.png" /></a>
+        <!-- <a  href="https://discord.gg/duskhaven" target="_blank" class="titlebar-button button--discord" id="titlebar-discord">
       </a> -->
-      <!-- <iconify-icon class="titlebar-button button--folder" id="titlebar-dir" icon="mdi:folder"></iconify-icon> -->
-      <iconify-icon class="titlebar-button button--min" id="titlebar-minimize" icon="mdi:minus"></iconify-icon>
-      <iconify-icon class="titlebar-button button--close" id="titlebar-close" icon="ic:baseline-close"></iconify-icon>
-
-    </div>
-  </header>
-  <main>
-    <div class=" row main-content">
-      <div class="col-6">
-        <div class="content">
-          <h3>Latest News</h3>
-          <!-- Content generated -->
-          <ul id="newslist"></ul>
+        <!-- <iconify-icon class="titlebar-button button--folder" id="titlebar-dir" icon="mdi:folder"></iconify-icon> -->
+        <iconify-icon
+          class="titlebar-button button--min"
+          id="titlebar-minimize"
+          icon="mdi:minus"
+        ></iconify-icon>
+        <iconify-icon
+          class="titlebar-button button--close"
+          id="titlebar-close"
+          icon="ic:baseline-close"
+        ></iconify-icon>
+      </div>
+    </header>
+    <main>
+      <div class="row main-content">
+        <div class="col-6">
+          <div class="content">
+            <h3>Latest News</h3>
+            <!-- Content generated -->
+            <ul id="newslist"></ul>
+          </div>
         </div>
-
-      </div>
-      <div class="col-6 text-center">
-        <main class="col-6 text-center">
-
-
-        </main>
-
-      </div>
-    </div>
-  </main>
-  <footer>
-    <div class=" options row">
-      <div class="col-10">
-        <a href="https://www.duskhaven.net/" target="_blank"><iconify-icon icon="bi:globe"></iconify-icon> Website</a>
-      </div>
-      <div class="col-2 text-right">
-        <a href="https://discord.gg/duskhaven" target="_blank"><iconify-icon
-            icon="ic:baseline-discord"></iconify-icon></a>
-
-        <a href="https://www.youtube.com/channel/UCaGGXFKY-8ZpcipEW2z7xsw" target="_blank"><iconify-icon
-            icon="bi:youtube"></iconify-icon></a>
-      </div>
-    </div>
-    <div class="download-container row">
-      <div class="col-9 download-prog">
-        <div class="text-center download-text">
-        </div>
-        <div class="download">
-          <div class="download-progress" style="width: 0%"></div>
+        <div class="col-6 text-center">
+          <main class="col-6 text-center"></main>
         </div>
       </div>
-      <div class="col-3">
-        <div class="button-container">
-          <button id="play-button" class="button--big" disabled><span class="status-text">download</span></button>
-          <button id="titlebar-dir" class="button--big"><span class="status-text"><iconify-icon icon="mdi:folder"></iconify-icon></span></button>
+    </main>
+    <footer>
+      <div class="options row">
+        <div class="col-10">
+          <a href="https://www.duskhaven.net/" target="_blank"
+            ><iconify-icon icon="bi:globe"></iconify-icon> Website</a
+          >
         </div>
-        <div>
-          <input type="checkbox" id="autoplay"><label for="autoplay">auto-play after download</label>
+        <div class="col-2 text-right">
+          <a href="https://discord.gg/duskhaven" target="_blank"
+            ><iconify-icon icon="ic:baseline-discord"></iconify-icon
+          ></a>
+
+          <a
+            href="https://www.youtube.com/channel/UCaGGXFKY-8ZpcipEW2z7xsw"
+            target="_blank"
+            ><iconify-icon icon="bi:youtube"></iconify-icon
+          ></a>
         </div>
       </div>
-    </div>
+      <div class="download-container row">
+        <div class="col-9 download-prog">
+          <div class="text-center download-text"></div>
+          <div class="download">
+            <div class="download-progress" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="button-container">
+            <button id="play-button" class="button--big" disabled>
+              <span class="status-text">download</span>
+            </button>
+            <button id="titlebar-dir" class="button--big">
+              <span class="status-text"
+                ><iconify-icon icon="mdi:folder"></iconify-icon
+              ></span>
+            </button>
+          </div>
+          <div>
+            <input type="checkbox" id="autoplay" /><label for="autoplay"
+              >auto-play after download</label
+            >
+          </div>
+        </div>
+      </div>
+    </footer>
 
-  </footer>
-
-  <div class="focus"></div>
-  <!-- <iconify-icon id="animation-toggle" icon="mdi:clapperboard-off-outline"></iconify-icon> -->
-</body>
-
-
+    <div class="focus"></div>
+    <!-- <iconify-icon id="animation-toggle" icon="mdi:clapperboard-off-outline"></iconify-icon> -->
+  </body>
 </html>

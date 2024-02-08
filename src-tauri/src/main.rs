@@ -2,13 +2,16 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 extern crate serde_json;
 
+use futures::io::Cursor;
 // use reqwest::header::HeaderMap;
 // src-tauri/src/main.rs
 // use hex::encode;
 use reqwest::Client;
 use ring::digest::{Context, Digest, SHA256};
 use serde::{Deserialize, Serialize};
-use std::io::{Error, Read};
+use tokio::task::spawn_blocking;
+use zip_extract::extract;
+use std::io::{self, Error, Read};
 //use std::path::Path;
 use regex::{Captures, Regex};
 use std::process::Command;
@@ -17,6 +20,7 @@ use std::{fs, panic};
 use tauri::Manager;
 use tokio::fs::File;
 use tokio::io::{AsyncWriteExt, BufWriter};
+use std::path::{Path, PathBuf};
 
 #[derive(Serialize)]
 pub struct Progress {
@@ -51,6 +55,8 @@ pub struct Patch {
 
 const KEY53: u64 = 8186484168865098;
 const KEY14: u64 = 4887;
+
+const addons: &'static [&'static str] = &["ElvUI", "Clique"];
 
 #[tauri::command]
 fn modified_time(file_path: String) -> Result<SystemTime, String> {
@@ -99,6 +105,42 @@ async fn get_patches() -> Result<Patches, String> {
     let patches: Patches = serde_json::from_str(&b).unwrap();
 
     Ok(patches)
+}
+
+#[tauri::command]
+async fn get_addons(installDirectory: String) -> Result<Vec<String>, String> {
+    let mut installed_addons: Vec<String> = vec![];
+    for ele in addons {
+        let directory = installDirectory.to_string() + "/Interface/AddOns/" + ele;
+        if Path::new(&directory).exists() {
+            installed_addons.push(ele.to_string());
+        }
+    }
+    Ok(installed_addons)
+}
+
+#[tauri::command]
+async fn download_addon(fileDirectory: String, installDirectory: String) -> Result<String, String> {
+    let targetDir = PathBuf::from(format!("{}/Interface/AddOns", installDirectory));
+
+    // Read the zip file from disk using spawn_blocking
+    let read_result =  std::fs::read(fileDirectory);
+    let archive = match read_result {
+        Ok(archive) => archive,
+        Err(_) => return Err("Issue in reading archive".to_string()),
+    };
+
+    // Extract the zip file to another folder using spawn_blocking
+    let extract_result = spawn_blocking(move || {
+        let cursor = std::io::Cursor::new(archive);
+        extract(cursor, &targetDir, true)
+    }).await;
+
+    if let Err(_) = extract_result {
+        return Err("Issue in extracting archive".to_string());
+    }
+
+    Ok("Success".to_string())
 }
 
 #[tauri::command]
@@ -279,7 +321,9 @@ fn main() {
             get_patches,
             modified_time,
             open_app,
-            update_account_info
+            update_account_info,
+            get_addons,
+            download_addon
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
