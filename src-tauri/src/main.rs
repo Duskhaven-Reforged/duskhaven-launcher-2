@@ -120,7 +120,7 @@ async fn get_addons(installDirectory: String) -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-async fn download_addon(fileDirectory: String, installDirectory: String) -> Result<String, String> {
+async fn download_addon(fileDirectory: String, installDirectory: String, topFolder: bool) -> Result<String, String> {
     let targetDir = PathBuf::from(format!("{}/Interface/AddOns", installDirectory));
 
     // Read the zip file from disk using spawn_blocking
@@ -133,7 +133,7 @@ async fn download_addon(fileDirectory: String, installDirectory: String) -> Resu
     // Extract the zip file to another folder using spawn_blocking
     let extract_result = spawn_blocking(move || {
         let cursor = std::io::Cursor::new(archive);
-        extract(cursor, &targetDir, true)
+        extract(cursor, &targetDir, topFolder)
     }).await;
 
     if let Err(_) = extract_result {
@@ -141,6 +141,15 @@ async fn download_addon(fileDirectory: String, installDirectory: String) -> Resu
     }
 
     Ok("Success".to_string())
+}
+
+#[tauri::command]
+fn delete_addon(addonName: String, installDirectory: String) -> Result<String, String> {
+    let addonPath = format!("{}/Interface/AddOns/{}", installDirectory, addonName);
+    match std::fs::remove_dir_all(addonPath) {
+        Ok(_) => Ok("Deletion successful".to_string()),
+        Err(e) => Err(format!("Error deleting addon: {}", e)),
+    }
 }
 
 #[tauri::command]
@@ -323,7 +332,8 @@ fn main() {
             open_app,
             update_account_info,
             get_addons,
-            download_addon
+            download_addon,
+            delete_addon
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,0 +1,42 @@
+.addon {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 20px;
+  background: rgb(46 25 16);
+  clip-path: polygon(
+    10px 0,
+    calc(100% - 10px) 0,
+    100% 50%,
+    calc(100% - 10px) 100%,
+    10px 100%,
+    0 50%
+  );
+}
+
+.addon button {
+  padding: 5px 25px;
+  background: var(--green);
+  border: 0;
+  clip-path: polygon(
+    10px 0,
+    calc(100% - 10px) 0,
+    100% 50%,
+    calc(100% - 10px) 100%,
+    10px 100%,
+    0 50%
+  );
+  color: #fff;
+}
+
+.addonList {
+  width: 80%;
+  margin: 0 auto;
+  background: var(--dark);
+  padding: 20px 10px;
+  border-radius: 10px;
+}
+
+.addon + .addon {
+  margin-top: 10px;
+}

@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="/src/reset.css" />
     <link rel="stylesheet" href="/src/grid.css" />
     <link rel="stylesheet" href="/src/styles.css" />
+    <link rel="stylesheet" href="/src/addons.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -19,7 +20,31 @@
     <script type="module" src="/src/addons.ts" defer></script>
   </head>
 
-  <body>
-    <div class="row"><button id="elvui">Elvui</button></div>
+  <body data-tauri-drag-region>
+    <header>
+      <div data-tauri-drag-region class="titlebar">
+        <a href="./index.html"><img src="img/logo-transparent.png" /></a>
+        <!-- <a  href="https://discord.gg/duskhaven" target="_blank" class="titlebar-button button--discord" id="titlebar-discord">
+      </a> -->
+        <!-- <iconify-icon class="titlebar-button button--folder" id="titlebar-dir" icon="mdi:folder"></iconify-icon> -->
+        <iconify-icon
+          class="titlebar-button button--min"
+          id="titlebar-minimize"
+          icon="mdi:minus"
+        ></iconify-icon>
+        <iconify-icon
+          class="titlebar-button button--close"
+          id="titlebar-close"
+          icon="ic:baseline-close"
+        ></iconify-icon>
+      </div>
+    </header>
+    <main>
+      <div class="row">
+        <div class="col-12">
+          <ul class="addonList" id="addonList"></ul>
+        </div>
+      </div>
+    </main>
   </body>
 </html>
