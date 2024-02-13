@@ -35,7 +35,7 @@ window.addEventListener("DOMContentLoaded", () => {
     ?.addEventListener("click", () => appWindow.minimize());
   document
     .getElementById("titlebar-close")
-    ?.addEventListener("click", () => appWindow.close());
+    ?.addEventListener("click", () => appClose());
   document
     .getElementById("animation-toggle")
     ?.addEventListener("click", toggleAnimation);
@@ -216,6 +216,18 @@ function setButtonState(state: ButtonStates, disabled: boolean) {
     statusText.innerHTML = state;
 }
 
+async function appClose() {
+  if(playButton.disabled) {
+    const confirmed = await ask('Closing the launcher while dowlnoading will corrupt the download. Are you sure you want to close?', { title: 'Tauri', type: 'warning' });
+    console.log(confirmed);
+    if(confirmed) {
+      appWindow.close();
+    }
+  }else {
+    appWindow.close();
+  }
+  
+}
 async function getNews() {
   const newsList: HTMLElement = document.getElementById("newslist") as HTMLElement;
   const client = await getClient();
