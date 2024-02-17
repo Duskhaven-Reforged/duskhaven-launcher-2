@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "duskhaven-launcher",
-    "version": "2.2.1"
+    "version": "2.2.2"
   },
   "tauri": {
     "allowlist": {
@@ -16,9 +16,7 @@
       "http": {
         "all": true,
         "request": true,
-        "scope": [
-          "https://**/*"
-        ]
+        "scope": ["https://**/*"]
       },
       "fs": {
         "all": true,
@@ -36,9 +34,9 @@
         "unminimize": true
       },
       "dialog": {
-        "all": true, 
+        "all": true,
         "ask": true,
-        "confirm": true, 
+        "confirm": true,
         "message": true,
         "open": true,
         "save": true
