@@ -162,12 +162,7 @@ async function downloadFiles() {
     const urls = downloadArray.map((patch) => {
       return `${url}${patch.ObjectName}`;
     });
-    const destinations = downloadArray.map((patch) => {
-      if (patch.ObjectName === "dusk-wow.exe") {
-        return `${installDirectory}/${patch.ObjectName}`;
-      }
-      return `${installDirectory}/Data/${patch.ObjectName}`;
-    });
+    const destinations = downloadArray.map((patch) => patch.filePath);
     setButtonState(ButtonStates.UPDATE, true);
     await invoke("download_files", {
       urls: urls,
@@ -214,20 +209,25 @@ async function fetchPatches() {
   }
   downloadArray = [];
   for (const patch of patches) {
+    let filePath = `${installDirectory}/Data/${patch.ObjectName}`;
+
+    if(patch.ObjectName == "dusk-wow.exe") {
+      filePath = `${installDirectory}/${patch.ObjectName}`;
+    }
     try {
       const timeStamp: { secs_since_epoch: number } = await invoke(
         "modified_time",
-        { filePath: `${installDirectory}/Data/${patch.ObjectName}` }
+        { filePath }
       );
       if (
         new Date(patch.LastChanged).getTime() / 1000 >
         timeStamp.secs_since_epoch
       ) {
-        await downloadArray.push(patch);
+        await downloadArray.push({...patch, filePath});
       }
     } catch (error) {
       console.log(error);
-      await downloadArray.push(patch);
+      await downloadArray.push({...patch, filePath});
     }
   }
   if (downloadArray.length === 0) {

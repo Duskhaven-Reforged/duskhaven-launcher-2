@@ -14,6 +14,7 @@ export interface Patch {
     StorageZoneId: number;
     StorageZoneName: string;
     UserId: string;
+    filePath?: string;
 }
 
 export interface Progress {
