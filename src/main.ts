@@ -51,6 +51,7 @@ window.addEventListener("DOMContentLoaded", () => {
   directorySelector?.addEventListener("click", setInstallDirectory);
   playButton?.addEventListener("click", handlePlayButton);
   getNews();
+  verifyFiles();
   //setAccountDetails("tittymilk", "bigdick");
 });
 
@@ -158,6 +159,7 @@ async function startGame() {
 }
 async function downloadFiles() {
   //playAudio();
+
   if (downloadArray) {
     const urls = downloadArray.map((patch) => {
       return `${url}${patch.ObjectName}`;
@@ -195,6 +197,11 @@ async function handlePlayButton() {
       break;
   }
 }
+async function verifyFiles() {
+  await invoke("sha256_digest", {fileLocation: `${installDirectory}/Data/patch-Z.MPQ`})
+    .then((result: unknown) => console.log("result", (result as string).toUpperCase()))
+    .catch(e => console.log(e));
+}
 
 async function fetchPatches() {
   try {
@@ -208,6 +215,7 @@ async function fetchPatches() {
     });
   }
   downloadArray = [];
+  console.log(patches);
   for (const patch of patches) {
     let filePath = `${installDirectory}/Data/${patch.ObjectName}`;
 

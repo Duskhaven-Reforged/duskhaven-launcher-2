@@ -6,9 +6,9 @@ extern crate serde_json;
 // src-tauri/src/main.rs
 // use hex::encode;
 use reqwest::Client;
-use ring::digest::{Context, Digest, SHA256};
 use serde::{Deserialize, Serialize};
 use std::io::{Error, Read};
+use sha2::{Sha256, Digest};
 //use std::path::Path;
 use regex::{Captures, Regex};
 use std::process::Command;
@@ -16,7 +16,7 @@ use std::time::{Instant, SystemTime};
 use std::{fs, panic};
 use tauri::Manager;
 use tokio::fs::File;
-use tokio::io::{AsyncWriteExt, BufWriter};
+use tokio::io::{AsyncReadExt, AsyncWriteExt, BufWriter};
 
 #[derive(Serialize)]
 pub struct Progress {
@@ -62,17 +62,25 @@ fn modified_time_of(file_path: String) -> Result<SystemTime, std::io::Error> {
     meta.modified()
 }
 
-fn sha256_digest<R: Read>(mut reader: R) -> Result<Digest, Error> {
-    let mut context = Context::new(&SHA256);
-    let mut buffer = [0; 1024];
+#[tauri::command]
+async fn sha256_digest(file_location: String) -> Result<String, String> {
+    let mut file = File::open(file_location).await.map_err(|err| err.to_string())?;
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer).await.map_err(|err| err.to_string())?;
+    let reader = &mut buffer.as_slice();
+
+    let mut context = Sha256::new();
+    let mut buffer = [0;  1024];
     loop {
-        let count = reader.read(&mut buffer)?;
-        if count == 0 {
+        let count = std::io::Read::read(reader, &mut buffer).map_err(|err| err.to_string())?;
+        if count ==  0 {
             break;
         }
         context.update(&buffer[..count]);
     }
-    Ok(context.finish())
+    let digest = context.finalize();
+    let digest_string = hex::encode(digest); // Use hex::encode to convert the digest to a string
+    Ok(digest_string)
 
     // How to Use:
     // let path = "C:/Games/patch-J.mpq";
@@ -279,7 +287,8 @@ fn main() {
             get_patches,
             modified_time,
             open_app,
-            update_account_info
+            update_account_info,
+            sha256_digest
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
