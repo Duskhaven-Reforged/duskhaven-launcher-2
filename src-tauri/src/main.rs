@@ -137,7 +137,7 @@ fn update_realmlist(
 
     // Write the new contents back to the file
     match fs::write(&file_path, contents) {
-        Ok(_) => Ok(format!("Application opened with PID ")),
+        Ok(_) => Ok(format!("File writter")),
         Err(e) => Err(e.to_string()),
     }
 }

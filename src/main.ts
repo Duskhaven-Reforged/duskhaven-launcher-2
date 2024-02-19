@@ -51,7 +51,6 @@ window.addEventListener("DOMContentLoaded", () => {
   directorySelector?.addEventListener("click", setInstallDirectory);
   playButton?.addEventListener("click", handlePlayButton);
   getNews();
-  //setAccountDetails("tittymilk", "bigdick");
 });
 
 async function hasInstallDirectory() {
@@ -73,14 +72,9 @@ async function hasInstallDirectory() {
       setInstallDirectory();
     }
   }
-  setRealmList();
   fetchPatches();
 }
-async function setRealmList() {
-  invoke('update_realmlist', {installDirectory})
-    .then(value => console.log("success", value))
-    .catch(error => console.log(error));
-}
+
 
 // async function setAccountDetails(username: string, password: string) {
 //   invoke('update_account_info', {installDirectory, username, password})
@@ -160,7 +154,7 @@ async function startGame() {
   invoke("open_app", { path: `${installDirectory}/dusk-wow.exe` })
     .then((message) => console.log(message))
     .catch((error) =>
-      message(`an error occurred!' ${error}`, { title: "Error", type: "error" })
+      message(`an error occurred!' ${error}`, { title: "Error (print screen this to get it solved)", type: "error" })
     );
 }
 async function downloadFiles() {
@@ -260,8 +254,8 @@ function setButtonState(state: ButtonStates, disabled: boolean) {
 async function appClose() {
   if (playButton.disabled) {
     const confirmed = await ask(
-      "Closing the launcher while dowlnoading will corrupt the download. Are you sure you want to close?",
-      { title: "Tauri", type: "warning" }
+      "Closing the launcher while downloading will corrupt the download. Are you sure you want to close?",
+      { title: "Duskhaven Launcher", type: "warning" }
     );
     console.log(confirmed);
     if (confirmed) {
@@ -328,6 +322,6 @@ onKonamiCode(function () {
 });
 
 function playAudio() {
-  playSound.volume = 0.5;
+  playSound.volume = 0.3;
   playSound.play();
 }
