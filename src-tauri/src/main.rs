@@ -109,14 +109,12 @@ fn open_app(path: String) -> Result<String, String> {
 }
 
 #[tauri::command]
-fn update_account_info(
-    installDirectory: String,
-    username: String,
-    password: String,
+fn update_realmlist(
+    install_directory: String
 ) -> Result<String, String> {
     // Define the regex pattern
-    let file_path = format!("{}/WTF/Config.wtf", installDirectory);
-    let re = Regex::new(r#"(?m)^SET accountName .*$"#).unwrap();
+    let file_path = format!("{}/WTF/Config.wtf", install_directory);
+    let re = Regex::new(r#"(?m)^SET realmlist .*$"#).unwrap();
 
     // Read the file
     let mut contents = match fs::read_to_string(&file_path) {
@@ -127,12 +125,12 @@ fn update_account_info(
     // Check if the line exists
     if re.captures(&contents).is_none() {
         // Append the line to the end of the file
-        contents.push_str(&format!("SET accountName \"{} {}\"\n", username, encode(&password)));
+        contents.push_str(&format!("SET realmlist \"{}\"\n", "auth.duskhaven.net"));
     } else {
         // Replace the matched line
         contents = re
             .replace(&contents, |caps: &Captures| {
-                format!("SET accountName \"{} {}\"", username, encode(&password))
+                format!("SET realmlist \"{}\"", "auth.duskhaven.net")
             })
             .to_string();
     }
@@ -279,7 +277,7 @@ fn main() {
             get_patches,
             modified_time,
             open_app,
-            update_account_info
+            update_realmlist
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

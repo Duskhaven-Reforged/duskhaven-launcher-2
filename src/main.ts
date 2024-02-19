@@ -51,6 +51,7 @@ window.addEventListener("DOMContentLoaded", () => {
   directorySelector?.addEventListener("click", setInstallDirectory);
   playButton?.addEventListener("click", handlePlayButton);
   getNews();
+  setRealmList();
   //setAccountDetails("tittymilk", "bigdick");
 });
 
@@ -75,6 +76,12 @@ async function hasInstallDirectory() {
   }
   fetchPatches();
 }
+async function setRealmList() {
+  invoke('update_realmlist', {installDirectory})
+    .then(value => console.log("success", value))
+    .catch(error => console.log(error));
+}
+
 // async function setAccountDetails(username: string, password: string) {
 //   invoke('update_account_info', {installDirectory, username, password})
 //     .then(value => console.log("success", value))
