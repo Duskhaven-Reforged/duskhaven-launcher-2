@@ -51,7 +51,7 @@ window.addEventListener("DOMContentLoaded", () => {
   directorySelector?.addEventListener("click", setInstallDirectory);
   playButton?.addEventListener("click", handlePlayButton);
   getNews();
-  verifyFiles();
+  verifyFiles("sss");
   //setAccountDetails("tittymilk", "bigdick");
 });
 
@@ -197,10 +197,10 @@ async function handlePlayButton() {
       break;
   }
 }
-async function verifyFiles() {
-  await invoke("sha256_digest", {fileLocation: `${installDirectory}/Data/patch-Z.MPQ`})
-    .then((result: unknown) => console.log("result", (result as string).toUpperCase()))
-    .catch(e => console.log(e));
+async function verifyFiles(fileLocation: string) {
+  return invoke("sha256_digest", {fileLocation})
+    .then((result: unknown) => (result as string).toUpperCase())
+    .catch(e => null);
 }
 
 async function fetchPatches() {
@@ -216,12 +216,16 @@ async function fetchPatches() {
   }
   downloadArray = [];
   console.log(patches);
+  console.time("test_timer");
   for (const patch of patches) {
+    
     let filePath = `${installDirectory}/Data/${patch.ObjectName}`;
 
     if(patch.ObjectName == "dusk-wow.exe") {
       filePath = `${installDirectory}/${patch.ObjectName}`;
     }
+    const encoded =await verifyFiles(filePath);
+    console.log(encoded);
     try {
       const timeStamp: { secs_since_epoch: number } = await invoke(
         "modified_time",
@@ -238,6 +242,7 @@ async function fetchPatches() {
       await downloadArray.push({...patch, filePath});
     }
   }
+  console.timeEnd("test_timer");
   if (downloadArray.length === 0) {
     dlText!.innerHTML = `ready to play`;
     setButtonState(ButtonStates.PLAY, false);
