@@ -51,7 +51,6 @@ window.addEventListener("DOMContentLoaded", () => {
   directorySelector?.addEventListener("click", setInstallDirectory);
   playButton?.addEventListener("click", handlePlayButton);
   getNews();
-  setRealmList();
   //setAccountDetails("tittymilk", "bigdick");
 });
 
@@ -74,6 +73,7 @@ async function hasInstallDirectory() {
       setInstallDirectory();
     }
   }
+  setRealmList();
   fetchPatches();
 }
 async function setRealmList() {
