@@ -7,7 +7,6 @@ extern crate serde_json;
 // use hex::encode;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use std::io::{Error, Read};
 use sha2::{Sha256, Digest};
 //use std::path::Path;
 use regex::{Captures, Regex};
@@ -118,12 +117,12 @@ fn open_app(path: String) -> Result<String, String> {
 
 #[tauri::command]
 fn update_account_info(
-    installDirectory: String,
+    install_directory: String,
     username: String,
     password: String,
 ) -> Result<String, String> {
     // Define the regex pattern
-    let file_path = format!("{}/WTF/Config.wtf", installDirectory);
+    let file_path = format!("{}/WTF/Config.wtf", install_directory);
     let re = Regex::new(r#"(?m)^SET accountName .*$"#).unwrap();
 
     // Read the file
@@ -139,7 +138,7 @@ fn update_account_info(
     } else {
         // Replace the matched line
         contents = re
-            .replace(&contents, |caps: &Captures| {
+            .replace(&contents, |_caps: &Captures| {
                 format!("SET accountName \"{} {}\"", username, encode(&password))
             })
             .to_string();
@@ -154,30 +153,30 @@ fn update_account_info(
 
 fn inv256() -> Vec<u64> {
     let mut inv256 = vec![0; 128];
-    for M in 0..128 {
+    for m in 0..128 {
         let mut inv = 1;
         loop {
             inv += 2;
-            if inv * ((2 * M + 1) as u64) % 256 == 1 {
+            if inv * ((2 * m + 1) as u64) % 256 == 1 {
                 break;
             }
         }
-        inv256[M] = inv;
+        inv256[m] = inv;
     }
     inv256
 }
 
 fn encode(str: &str) -> String {
     let inv256 = inv256();
-    let mut K = KEY53;
-    let F = 16384 + KEY14;
+    let mut k = KEY53;
+    let f = 16384 + KEY14;
     str.chars().map(|m| {
         let m = m as u64;
-        let L = K % 274877906944;
-        let H = (K - L) / 274877906944;
-        let M = H % 128;
-        let c = (m * inv256[M as usize] - (H - M as u64) / 128) % 256;
-        K = L * F + H + c + m;
+        let l = k % 274877906944;
+        let h = (k - l) / 274877906944;
+        let mm = h % 128;
+        let c = (m * inv256[mm as usize] - (h - mm as u64) / 128) % 256;
+        k = l * f + h + c + m;
         format!("{:02x}", c)
     }).collect()
 }

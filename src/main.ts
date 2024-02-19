@@ -224,8 +224,8 @@ async function fetchPatches() {
     if(patch.ObjectName == "dusk-wow.exe") {
       filePath = `${installDirectory}/${patch.ObjectName}`;
     }
-    const encoded =await verifyFiles(filePath);
-    console.log(encoded);
+    //const encoded =await verifyFiles(filePath);
+    //console.log(encoded);
     try {
       const timeStamp: { secs_since_epoch: number } = await invoke(
         "modified_time",
