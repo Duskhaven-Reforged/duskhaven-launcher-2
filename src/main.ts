@@ -317,7 +317,7 @@ function onKonamiCode(cb: Function) {
 }
 
 onKonamiCode(function () {
-  document.body.style.backgroundImage = "url('./src/assets/background.gif')";
+  document.body.style.backgroundImage = "url('/img/background.gif')";
 });
 
 function playAudio() {
