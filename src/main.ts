@@ -11,6 +11,7 @@ enum ButtonStates {
   PLAY = "Play",
   DOWNLOAD = "Download",
   UPDATE = "Update",
+  Verify = "Verifying"
 }
 let animcontainer: HTMLElement | null;
 let installDirectory = localStorage.getItem("installDirectory");
@@ -51,8 +52,6 @@ window.addEventListener("DOMContentLoaded", () => {
   directorySelector?.addEventListener("click", setInstallDirectory);
   playButton?.addEventListener("click", handlePlayButton);
   getNews();
-  verifyFiles("sss");
-  //setAccountDetails("tittymilk", "bigdick");
 });
 
 async function hasInstallDirectory() {
@@ -76,6 +75,8 @@ async function hasInstallDirectory() {
   }
   fetchPatches();
 }
+
+
 // async function setAccountDetails(username: string, password: string) {
 //   invoke('update_account_info', {installDirectory, username, password})
 //     .then(value => console.log("success", value))
@@ -154,7 +155,7 @@ async function startGame() {
   invoke("open_app", { path: `${installDirectory}/dusk-wow.exe` })
     .then((message) => console.log(message))
     .catch((error) =>
-      message(`an error occurred!' ${error}`, { title: "Error", type: "error" })
+      message(`an error occurred!' ${error}`, { title: "Error (print screen this to get it solved)", type: "error" })
     );
 }
 async function downloadFiles() {
@@ -197,7 +198,8 @@ async function handlePlayButton() {
       break;
   }
 }
-async function verifyFiles(fileLocation: string) {
+
+async function verifyFile(fileLocation: string) {
   return invoke("sha256_digest", {fileLocation})
     .then((result: unknown) => (result as string).toUpperCase())
     .catch(e => null);
@@ -224,7 +226,8 @@ async function fetchPatches() {
     if(patch.ObjectName == "dusk-wow.exe") {
       filePath = `${installDirectory}/${patch.ObjectName}`;
     }
-    //const encoded =await verifyFiles(filePath);
+    
+    //const encoded =await verifyFile(filePath);
     //console.log(encoded);
     try {
       const timeStamp: { secs_since_epoch: number } = await invoke(
@@ -266,8 +269,8 @@ function setButtonState(state: ButtonStates, disabled: boolean) {
 async function appClose() {
   if (playButton.disabled) {
     const confirmed = await ask(
-      "Closing the launcher while dowlnoading will corrupt the download. Are you sure you want to close?",
-      { title: "Tauri", type: "warning" }
+      "Closing the launcher while downloading will corrupt the download. Are you sure you want to close?",
+      { title: "Duskhaven Launcher", type: "warning" }
     );
     console.log(confirmed);
     if (confirmed) {
@@ -330,10 +333,10 @@ function onKonamiCode(cb: Function) {
 }
 
 onKonamiCode(function () {
-  document.body.style.backgroundImage = "url('./src/assets/background.gif')";
+  document.body.style.backgroundImage = "url('/img/background.gif')";
 });
 
 function playAudio() {
-  playSound.volume = 0.5;
+  playSound.volume = 0.3;
   playSound.play();
 }

@@ -7,7 +7,7 @@ extern crate serde_json;
 // use hex::encode;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use sha2::{Sha256, Digest};
+use sha2::{Digest, Sha256};
 //use std::path::Path;
 use regex::{Captures, Regex};
 use std::process::Command;
@@ -63,16 +63,20 @@ fn modified_time_of(file_path: String) -> Result<SystemTime, std::io::Error> {
 
 #[tauri::command]
 async fn sha256_digest(file_location: String) -> Result<String, String> {
-    let mut file = File::open(file_location).await.map_err(|err| err.to_string())?;
+    let mut file = File::open(file_location)
+        .await
+        .map_err(|err| err.to_string())?;
     let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer).await.map_err(|err| err.to_string())?;
+    file.read_to_end(&mut buffer)
+        .await
+        .map_err(|err| err.to_string())?;
     let reader = &mut buffer.as_slice();
 
     let mut context = Sha256::new();
-    let mut buffer = [0;  1024];
+    let mut buffer = [0; 1024];
     loop {
         let count = std::io::Read::read(reader, &mut buffer).map_err(|err| err.to_string())?;
-        if count ==  0 {
+        if count == 0 {
             break;
         }
         context.update(&buffer[..count]);
@@ -115,41 +119,6 @@ fn open_app(path: String) -> Result<String, String> {
     Ok(format!("Application opened with PID {}", child.id()))
 }
 
-#[tauri::command]
-fn update_account_info(
-    install_directory: String,
-    username: String,
-    password: String,
-) -> Result<String, String> {
-    // Define the regex pattern
-    let file_path = format!("{}/WTF/Config.wtf", install_directory);
-    let re = Regex::new(r#"(?m)^SET accountName .*$"#).unwrap();
-
-    // Read the file
-    let mut contents = match fs::read_to_string(&file_path) {
-        Ok(contents) => contents,
-        Err(e) => return Err(e.to_string()),
-    };
-
-    // Check if the line exists
-    if re.captures(&contents).is_none() {
-        // Append the line to the end of the file
-        contents.push_str(&format!("SET accountName \"{} {}\"\n", username, encode(&password)));
-    } else {
-        // Replace the matched line
-        contents = re
-            .replace(&contents, |_caps: &Captures| {
-                format!("SET accountName \"{} {}\"", username, encode(&password))
-            })
-            .to_string();
-    }
-
-    // Write the new contents back to the file
-    match fs::write(&file_path, contents) {
-        Ok(_) => Ok(format!("Application opened with PID ")),
-        Err(e) => Err(e.to_string()),
-    }
-}
 
 fn inv256() -> Vec<u64> {
     let mut inv256 = vec![0; 128];
@@ -170,15 +139,17 @@ fn encode(str: &str) -> String {
     let inv256 = inv256();
     let mut k = KEY53;
     let f = 16384 + KEY14;
-    str.chars().map(|m| {
-        let m = m as u64;
-        let l = k % 274877906944;
-        let h = (k - l) / 274877906944;
-        let mm = h % 128;
-        let c = (m * inv256[mm as usize] - (h - mm as u64) / 128) % 256;
-        k = l * f + h + c + m;
-        format!("{:02x}", c)
-    }).collect()
+    str.chars()
+        .map(|m| {
+            let m = m as u64;
+            let l = k % 274877906944;
+            let h = (k - l) / 274877906944;
+            let mm = h % 128;
+            let c = (m * inv256[mm as usize] - (h - mm as u64) / 128) % 256;
+            k = l * f + h + c + m;
+            format!("{:02x}", c)
+        })
+        .collect()
 }
 
 #[tauri::command]
@@ -286,7 +257,6 @@ fn main() {
             get_patches,
             modified_time,
             open_app,
-            update_account_info,
             sha256_digest
         ])
         .run(tauri::generate_context!())
