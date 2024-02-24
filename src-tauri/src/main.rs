@@ -2,13 +2,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 extern crate serde_json;
 
+use log::{error, info};
 // use reqwest::header::HeaderMap;
-// src-tauri/src/main.rs
-// use hex::encode;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-//use std::path::Path;
 use regex::{Captures, Regex};
 use std::process::Command;
 use std::time::{Instant, SystemTime};
@@ -63,38 +61,26 @@ fn modified_time_of(file_path: String) -> Result<SystemTime, std::io::Error> {
 
 #[tauri::command]
 async fn sha256_digest(file_location: String) -> Result<String, String> {
+    println!("{}", file_location);
+    //get file
     let mut file = File::open(file_location)
         .await
         .map_err(|err| err.to_string())?;
     let mut buffer = Vec::new();
+    //read file to end (reads it in binary)
     file.read_to_end(&mut buffer)
         .await
         .map_err(|err| err.to_string())?;
-    let reader = &mut buffer.as_slice();
-
+    //sets up a sha256 algorith to digest the file
     let mut context = Sha256::new();
-    let mut buffer = [0; 1024];
-    loop {
-        let count = std::io::Read::read(reader, &mut buffer).map_err(|err| err.to_string())?;
-        if count == 0 {
-            break;
-        }
-        context.update(&buffer[..count]);
-    }
-    let digest = context.finalize();
-    let digest_string = hex::encode(digest); // Use hex::encode to convert the digest to a string
-    Ok(digest_string)
 
-    // How to Use:
-    // let path = "C:/Games/patch-J.mpq";
-    // let mut file = File::open(path).await.map_err(|e| e.to_string())?;
-    // let mut buffer = Vec::new();
-    // file.read_to_end(&mut buffer)
-    //     .await
-    //     .map_err(|e| e.to_string())?;
-    // let digest = sha256_digest(&mut buffer.as_slice()).unwrap();
-    // let digest_string = encode(digest.as_ref());
-    // println!("SHA-256 digest is {}", digest_string);
+    //adds content to hasher
+    context.update(buffer);
+    
+    let digest = context.finalize();
+    //hashes the file contents and sends it
+    let digest_string = hex::encode(digest);
+    Ok(digest_string)
 }
 
 #[tauri::command]
@@ -118,7 +104,6 @@ fn open_app(path: String) -> Result<String, String> {
 
     Ok(format!("Application opened with PID {}", child.id()))
 }
-
 
 fn inv256() -> Vec<u64> {
     let mut inv256 = vec![0; 128];
@@ -201,7 +186,8 @@ async fn download_files(
                 match out.write_all(&chunk).await {
                     Ok(_) => (),
                     Err(err) => {
-                        println!("the problem is :{}%", err.to_string());
+                        error!("the problem is :{}", err.to_string());
+                        println!("the problem is :{}", err.to_string());
                         return Err(err.to_string());
                     }
                 };
@@ -214,22 +200,22 @@ async fn download_files(
                     0.0
                 };
                 progress.transfer_rate = downloaded as f64 / start.elapsed().as_secs_f64();
-                //println!("the progress is :{}%", progress.percentage.to_string());
+
                 match app.emit_all("DOWNLOAD_PROGRESS", &progress) {
                     Ok(_) => {
-                        println!("the progress is :{}%", progress.percentage.to_string());
+                        //println!("the progress is :{}%", progress.percentage.to_string());
                     }
                     Err(err) => {
-                        println!("the problem is :{}%", err.to_string());
+                        println!("the problem is :{}", err.to_string());
                         return Err(err.to_string());
                     }
                 };
             }
             match app.emit_all("DOWNLOAD_FINISHED", &progress) {
-                Ok(_) => {}
+                Ok(_) => { info!("download for file {} finished", &destination)}
                 Err(err) => {
                     println!(
-                        "the problem is :{}%",
+                        "the problem is :{}",
                         total_size.status().as_str().to_string()
                     );
                     return Err(err.to_string());
@@ -261,4 +247,5 @@ fn main() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+    info!("Starting application");
 }

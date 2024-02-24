@@ -11,7 +11,7 @@ enum ButtonStates {
   PLAY = "Play",
   DOWNLOAD = "Download",
   UPDATE = "Update",
-  Verify = "Verifying"
+  VERIFY = "Verifying"
 }
 let animcontainer: HTMLElement | null;
 let installDirectory = localStorage.getItem("installDirectory");
@@ -83,7 +83,7 @@ async function hasInstallDirectory() {
 //     .catch(error => console.log(error));
 // }
 async function setInstallDirectory() {
-  if (playButton.disabled) {
+  if (directorySelector.disabled) {
     return;
   }
   const appdir = await appDataDir();
@@ -131,13 +131,12 @@ listen("DOWNLOAD_PROGRESS", (event) => {
   dlProgress!.style!.width = `${progress.percentage}%`;
   dlText!.innerHTML = `<div class="percent"> ${progress.percentage.toFixed(
     2
-  )}%</div><div class="file">${
-    downloadArray[progress.download_id].ObjectName
-  } </div>  <div class="speed">(${(
-    progress.transfer_rate /
-    1000 /
-    1000
-  ).toFixed(2)} MB/sec)</div>`;
+  )}%</div><div class="file">${downloadArray[progress.download_id].ObjectName
+    } </div>  <div class="speed">(${(
+      progress.transfer_rate /
+      1000 /
+      1000
+    ).toFixed(2)} MB/sec)</div>`;
 });
 
 // listen for download finished
@@ -159,8 +158,6 @@ async function startGame() {
     );
 }
 async function downloadFiles() {
-  //playAudio();
-
   if (downloadArray) {
     const urls = downloadArray.map((patch) => {
       return `${url}${patch.ObjectName}`;
@@ -171,8 +168,15 @@ async function downloadFiles() {
       urls: urls,
       destinations: destinations,
     })
-      .then(() => {
-        console.log("Download started");
+      .then(async (result) => {
+        setButtonState(ButtonStates.VERIFY, true);
+        for(const file of destinations) {
+          dlText!.innerHTML = `<div class="percent"> Verifying downloaded files...</div>`;
+          await getFileHash(file!, true);
+          
+        }
+        setButtonState(ButtonStates.PLAY, false);
+        console.log("file", result)
       })
       .catch((err) => {
         setButtonState(ButtonStates.UPDATE, false);
@@ -199,13 +203,25 @@ async function handlePlayButton() {
   }
 }
 
-async function verifyFile(fileLocation: string) {
-  return invoke("sha256_digest", {fileLocation})
-    .then((result: unknown) => (result as string).toUpperCase())
-    .catch(e => null);
+async function getFileHash(fileLocation: string, force= false ) {
+  const fileName = fileLocation.split("/").pop()!;
+
+  if (localStorage.getItem(fileName) && !force) {
+    return localStorage.getItem(fileName)
+  } else {
+    return invoke("sha256_digest", { fileLocation })
+      .then((result: unknown) => {
+        console.log("setting new item");
+        console.log("result", result);
+        localStorage.setItem(fileName, (result as string).toUpperCase())
+        return (result as string).toUpperCase();
+      })
+      .catch(e => null);
+  }
 }
 
 async function fetchPatches() {
+  
   try {
     patches = await invoke("get_patches");
     dlText!.innerHTML = `getting patch info`;
@@ -219,32 +235,36 @@ async function fetchPatches() {
   downloadArray = [];
   console.log(patches);
   console.time("test_timer");
-  for (const patch of patches) {
-    
+
+  for (const [index, patch] of patches.entries()) {
+    setButtonState(ButtonStates.VERIFY, true);
+    dlText!.innerHTML = `<div class="percent"> Verifying files...</div><div class="file">${patch.ObjectName}</div>  <div class="speed">Patch ${index + 1}/${patches.length}</div>`;
     let filePath = `${installDirectory}/Data/${patch.ObjectName}`;
 
-    if(patch.ObjectName == "dusk-wow.exe") {
+    if (patch.ObjectName == "dusk-wow.exe") {
       filePath = `${installDirectory}/${patch.ObjectName}`;
     }
-    
-    //const encoded =await verifyFile(filePath);
-    //console.log(encoded);
+
+    const encoded = await getFileHash(filePath);
+    console.log("file hash:",encoded);
+    console.log("remote hash:", patch.Checksum)
     try {
       const timeStamp: { secs_since_epoch: number } = await invoke(
         "modified_time",
         { filePath }
       );
       if (
-        new Date(patch.LastChanged).getTime() / 1000 >
-        timeStamp.secs_since_epoch
+        (new Date(patch.LastChanged).getTime() / 1000 >
+        timeStamp.secs_since_epoch) || encoded !== patch.Checksum
       ) {
-        await downloadArray.push({...patch, filePath});
+        await downloadArray.push({ ...patch, filePath });
       }
     } catch (error) {
       console.log(error);
-      await downloadArray.push({...patch, filePath});
+      await downloadArray.push({ ...patch, filePath });
     }
   }
+  console.log(downloadArray);
   console.timeEnd("test_timer");
   if (downloadArray.length === 0) {
     dlText!.innerHTML = `ready to play`;
@@ -287,17 +307,15 @@ async function getNews() {
   const client = await getClient();
   const options = {
     headers: {
-      Authorization: `Bearer ${
-        process.env.VITE_STRAPPI_TOKEN || import.meta.env.VITE_STRAPPI_TOKEN
-      }`,
+      Authorization: `Bearer ${process.env.VITE_STRAPPI_TOKEN || import.meta.env.VITE_STRAPPI_TOKEN
+        }`,
       "Content-Type": "application/json",
     },
     responseType: ResponseType.JSON,
   };
 
   const response = await client.get(
-    `${
-      process.env.VITE_STRAPPI_URL || import.meta.env.VITE_STRAPPI_URL
+    `${process.env.VITE_STRAPPI_URL || import.meta.env.VITE_STRAPPI_URL
     }/blogs?pagination[page]=1&pagination[7]=1&populate=* `,
     options
   );
