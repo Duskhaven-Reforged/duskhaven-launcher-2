@@ -7,7 +7,7 @@ use log::{error, info};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use regex::{Captures, Regex};
+// use regex::{Captures, Regex};
 use std::process::Command;
 use std::time::{Instant, SystemTime};
 use std::{fs, panic};
@@ -46,8 +46,8 @@ pub struct Patch {
     replicated_zones: String,
 }
 
-const KEY53: u64 = 8186484168865098;
-const KEY14: u64 = 4887;
+// const KEY53: u64 = 8186484168865098;
+// const KEY14: u64 = 4887;
 
 #[tauri::command]
 fn modified_time(file_path: String) -> Result<SystemTime, String> {
@@ -105,37 +105,37 @@ fn open_app(path: String) -> Result<String, String> {
     Ok(format!("Application opened with PID {}", child.id()))
 }
 
-fn inv256() -> Vec<u64> {
-    let mut inv256 = vec![0; 128];
-    for m in 0..128 {
-        let mut inv = 1;
-        loop {
-            inv += 2;
-            if inv * ((2 * m + 1) as u64) % 256 == 1 {
-                break;
-            }
-        }
-        inv256[m] = inv;
-    }
-    inv256
-}
+// fn inv256() -> Vec<u64> {
+//     let mut inv256 = vec![0; 128];
+//     for m in 0..128 {
+//         let mut inv = 1;
+//         loop {
+//             inv += 2;
+//             if inv * ((2 * m + 1) as u64) % 256 == 1 {
+//                 break;
+//             }
+//         }
+//         inv256[m] = inv;
+//     }
+//     inv256
+// }
 
-fn encode(str: &str) -> String {
-    let inv256 = inv256();
-    let mut k = KEY53;
-    let f = 16384 + KEY14;
-    str.chars()
-        .map(|m| {
-            let m = m as u64;
-            let l = k % 274877906944;
-            let h = (k - l) / 274877906944;
-            let mm = h % 128;
-            let c = (m * inv256[mm as usize] - (h - mm as u64) / 128) % 256;
-            k = l * f + h + c + m;
-            format!("{:02x}", c)
-        })
-        .collect()
-}
+// fn encode(str: &str) -> String {
+//     let inv256 = inv256();
+//     let mut k = KEY53;
+//     let f = 16384 + KEY14;
+//     str.chars()
+//         .map(|m| {
+//             let m = m as u64;
+//             let l = k % 274877906944;
+//             let h = (k - l) / 274877906944;
+//             let mm = h % 128;
+//             let c = (m * inv256[mm as usize] - (h - mm as u64) / 128) % 256;
+//             k = l * f + h + c + m;
+//             format!("{:02x}", c)
+//         })
+//         .collect()
+// }
 
 #[tauri::command]
 async fn download_files(

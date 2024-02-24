@@ -76,12 +76,6 @@ async function hasInstallDirectory() {
   fetchPatches();
 }
 
-
-// async function setAccountDetails(username: string, password: string) {
-//   invoke('update_account_info', {installDirectory, username, password})
-//     .then(value => console.log("success", value))
-//     .catch(error => console.log(error));
-// }
 async function setInstallDirectory() {
   if (directorySelector.disabled) {
     return;
@@ -216,12 +210,11 @@ async function getFileHash(fileLocation: string, force= false ) {
         localStorage.setItem(fileName, (result as string).toUpperCase())
         return (result as string).toUpperCase();
       })
-      .catch(e => null);
+      .catch(e => console.log("file doesn't exist", e));
   }
 }
 
 async function fetchPatches() {
-  
   try {
     patches = await invoke("get_patches");
     dlText!.innerHTML = `getting patch info`;
