@@ -310,7 +310,7 @@ async function getNews() {
 
   const response = await client.get(
     `${process.env.VITE_STRAPPI_URL || import.meta.env.VITE_STRAPPI_URL
-    }/blogs?pagination[page]=1&pagination[7]=1&populate=* `,
+    }/blogs?pagination[page]=1&pagination[pageSize]=5&sort[0]=id:desc`,
     options
   );
   const data: any = response.data;
