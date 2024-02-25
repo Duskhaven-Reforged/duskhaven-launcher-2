@@ -169,8 +169,9 @@ async function downloadFiles() {
           await getFileHash(file!, true);
           
         }
+        dlProgress!.style!.width = `0%`;
+        dlText!.innerHTML = `ready to play`;
         setButtonState(ButtonStates.PLAY, false);
-        console.log("file", result)
       })
       .catch((err) => {
         setButtonState(ButtonStates.UPDATE, false);
