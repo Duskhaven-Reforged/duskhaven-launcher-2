@@ -162,7 +162,7 @@ async function downloadFiles() {
       urls: urls,
       destinations: destinations,
     })
-      .then(async (result) => {
+      .then(async () => {
         setButtonState(ButtonStates.VERIFY, true);
         for(const file of destinations) {
           dlText!.innerHTML = `<div class="percent"> Verifying downloaded files...</div>`;
