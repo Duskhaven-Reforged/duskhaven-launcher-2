@@ -297,7 +297,6 @@ fn main() {
             get_patches,
             modified_time,
             open_app,
-            update_account_info,
             get_addons,
             download_addon,
             delete_addon,
