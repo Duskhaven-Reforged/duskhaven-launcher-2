@@ -6,6 +6,10 @@
   flex-wrap: wrap;
 }
 
+.row-column {
+  flex-direction: column;
+}
+
 .col {
   flex: 1;
   padding: 0 1.5rem;
