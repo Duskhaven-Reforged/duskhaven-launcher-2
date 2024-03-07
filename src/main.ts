@@ -217,7 +217,9 @@ async function getFileHash(fileLocation: string, force= false ) {
 
 async function fetchPatches() {
   try {
-    patches = await invoke("get_patches");
+    const patchesPlain: string = await invoke("get_patches");
+    patches = JSON.parse(patchesPlain);
+    patches = patches.filter(value => value.IsDirectory === false);
     dlText!.innerHTML = `getting patch info`;
   } catch (error) {
     dlText!.innerHTML = `there seems to be a problem getting the patches: ${error}`;

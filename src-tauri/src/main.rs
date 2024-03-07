@@ -84,7 +84,7 @@ async fn sha256_digest(file_location: String) -> Result<String, String> {
 }
 
 #[tauri::command]
-async fn get_patches() -> Result<Patches, String> {
+async fn get_patches() -> Result<String, String> {
     let client = Client::new();
     let body = client
         .get("https://storage.bunnycdn.com/duskhaven-patches/")
@@ -93,9 +93,9 @@ async fn get_patches() -> Result<Patches, String> {
         .await
         .map_err(|err| err.to_string())?;
     let b = body.text().await.unwrap();
-    let patches: Patches = serde_json::from_str(&b).unwrap();
+    //let patches: Patches = serde_json::from_str(&b).unwrap();
 
-    Ok(patches)
+    Ok(b.to_string())
 }
 
 #[tauri::command]
