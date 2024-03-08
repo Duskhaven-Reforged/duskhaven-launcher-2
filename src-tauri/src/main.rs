@@ -46,12 +46,33 @@ pub struct Patch {
     replicated_zones: String,
 }
 
+#[derive(Serialize, Deserialize)]
+struct LogMessage {
+    message: String,
+    level: String,
+}
+
 // const KEY53: u64 = 8186484168865098;
 // const KEY14: u64 = 4887;
 
 #[tauri::command]
+fn log_message(log: LogMessage) {
+    
+    match log.level.as_str() {
+        "error" => log::error!("{}", log.message),
+        "warn" => log::warn!("{}", log.message),
+        "info" => log::info!("{}", log.message),
+        _ => log::debug!("{}", log.message),
+    }
+}
+
+#[tauri::command]
 fn modified_time(file_path: String) -> Result<SystemTime, String> {
-    modified_time_of(file_path).map_err(|err| err.to_string()) // separate function to change either error to String
+    info!("getting modified time of: {}", file_path);
+    modified_time_of(file_path).map_err(|err| {
+        error!("{}", err.to_string());
+        err.to_string()
+    }) // separate function to change either error to String
 }
 
 fn modified_time_of(file_path: String) -> Result<SystemTime, std::io::Error> {
@@ -62,21 +83,28 @@ fn modified_time_of(file_path: String) -> Result<SystemTime, std::io::Error> {
 #[tauri::command]
 async fn sha256_digest(file_location: String) -> Result<String, String> {
     println!("{}", file_location);
+    info!("getting sha256_digest of file {}", file_location);
     //get file
     let mut file = File::open(file_location)
         .await
-        .map_err(|err| err.to_string())?;
+        .map_err(|err| {
+            error!("{}", err.to_string());
+            err.to_string()
+        })?;
     let mut buffer = Vec::new();
     //read file to end (reads it in binary)
     file.read_to_end(&mut buffer)
         .await
-        .map_err(|err| err.to_string())?;
+        .map_err(|err| {
+            error!("{}", err.to_string());
+            err.to_string()
+        })?;
     //sets up a sha256 algorith to digest the file
     let mut context = Sha256::new();
-
+    
     //adds content to hasher
     context.update(buffer);
-    
+
     let digest = context.finalize();
     //hashes the file contents and sends it
     let digest_string = hex::encode(digest);
@@ -85,13 +113,17 @@ async fn sha256_digest(file_location: String) -> Result<String, String> {
 
 #[tauri::command]
 async fn get_patches() -> Result<String, String> {
+    info!("getting all patches available");
     let client = Client::new();
     let body = client
         .get("https://storage.bunnycdn.com/duskhaven-patches/")
         .header("AccessKey", "e56f9198-3a9c-4e06-9be7cfec52c3-4757-4aac")
         .send()
         .await
-        .map_err(|err| err.to_string())?;
+        .map_err(|err| {
+            error!("{}", err.to_string());
+            err.to_string()
+        })?;
     let b = body.text().await.unwrap();
     //let patches: Patches = serde_json::from_str(&b).unwrap();
 
@@ -100,7 +132,11 @@ async fn get_patches() -> Result<String, String> {
 
 #[tauri::command]
 fn open_app(path: String) -> Result<String, String> {
-    let child = Command::new(path).spawn().map_err(|err| err.to_string())?;
+    info!("opening world of warcraft");
+    let child = Command::new(path).spawn().map_err(|err| {
+        error!("{}", err.to_string());
+        err.to_string()
+    })?;
 
     Ok(format!("Application opened with PID {}", child.id()))
 }
@@ -143,19 +179,20 @@ async fn download_files(
     urls: Vec<String>,
     destinations: Vec<String>,
 ) -> Result<(), String> {
+    info!("starting to download files");
     let client = Client::new();
     if urls.is_empty() {
+        info!("No urls to process");
         return Err("No urls to process".to_string());
     }
 
     for (index, url) in urls.iter().enumerate() {
         let destination = &destinations[index];
 
-        let total_size = client
-            .head(url)
-            .send()
-            .await
-            .map_err(|err| err.to_string())?;
+        let total_size = client.head(url).send().await.map_err(|err| {
+            error!("{}", err.to_string());
+            err.to_string()
+        })?;
 
         if total_size.status().is_success() {
             let size = total_size
@@ -165,13 +202,15 @@ async fn download_files(
                 .unwrap_or(0);
 
             let request = client.get(url);
-            let mut response = request.send().await.map_err(|err| err.to_string())?;
+            let mut response = request.send().await.map_err(|err| {
+                error!("{}", err.to_string());
+                err.to_string()
+            })?;
 
-            let mut out = BufWriter::new(
-                File::create(&destination)
-                    .await
-                    .map_err(|err| err.to_string())?,
-            );
+            let mut out = BufWriter::new(File::create(&destination).await.map_err(|err| {
+                error!("{}", err.to_string());
+                err.to_string()
+            })?);
             let mut downloaded: u64 = 0;
             let start = Instant::now();
             let mut progress = Progress {
@@ -187,7 +226,6 @@ async fn download_files(
                     Ok(_) => (),
                     Err(err) => {
                         error!("the problem is :{}", err.to_string());
-                        println!("the problem is :{}", err.to_string());
                         return Err(err.to_string());
                     }
                 };
@@ -206,14 +244,18 @@ async fn download_files(
                         //println!("the progress is :{}%", progress.percentage.to_string());
                     }
                     Err(err) => {
+                        error!("the problem is :{}", err.to_string());
                         println!("the problem is :{}", err.to_string());
                         return Err(err.to_string());
                     }
                 };
             }
             match app.emit_all("DOWNLOAD_FINISHED", &progress) {
-                Ok(_) => { info!("download for file {} finished", &destination)}
+                Ok(_) => {
+                    info!("download for file {} finished", &destination)
+                }
                 Err(err) => {
+                    error!("the problem is :{}", err.to_string());
                     println!(
                         "the problem is :{}",
                         total_size.status().as_str().to_string()
@@ -223,18 +265,47 @@ async fn download_files(
             }
             // app.emit_all("DOWNLOAD_FINISHED", &progress).unwrap();
         } else {
+            error!("the problem is :{}", total_size.status().as_str().to_string());
             return Err(total_size.status().as_str().to_string());
         }
     }
+    info!("all files downloaded successfully");
+    Ok(())
+}
+
+fn setup_logging() -> Result<(), fern::InitError> {
+    info!("setting up logging");
+    // Customize the log file location here
+    let log_file_path = "logs/my_app.log"; // You can change this path
+    std::fs::create_dir_all("logs").expect("Failed to create log directory");
+    fern::Dispatch::new()
+        .format(|out, message, record| {
+            out.finish(format_args!(
+                "{}[{}][{}] {}",
+                chrono::Local::now().format("[%Y-%m-%d %H:%M:%S]"),
+                record.target(),
+                record.level(),
+                message
+            ))
+        })
+        .level(log::LevelFilter::Info)
+        // Output to stdout
+        //.chain(std::io::stdout())
+        // Output to a file
+        .chain(fern::log_file(log_file_path)?)
+        .apply()?;
+    
+        info!("logging set up");
     Ok(())
 }
 
 fn main() {
+    setup_logging().expect("failed to initialize logging");
     panic::set_hook(Box::new(|panic_info| {
         if let Some(s) = panic_info.payload().downcast_ref::<&str>() {
-            println!("Panic occurred: {}", s);
+            error!("PANIC!: {}", s);
         } else {
-            println!("Panic occurred");
+            error!("PANIC!");
         }
     }));
     tauri::Builder::default()
@@ -243,9 +314,10 @@ fn main() {
             get_patches,
             modified_time,
             open_app,
-            sha256_digest
+            sha256_digest,
+            log_message
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-    info!("Starting application");
+
 }

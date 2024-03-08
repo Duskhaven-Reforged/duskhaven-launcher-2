@@ -146,9 +146,9 @@ listen("DOWNLOAD_FINISHED", (event: { payload: Progress }) => {
 async function startGame() {
   playAudio();
   invoke("open_app", { path: `${installDirectory}/dusk-wow.exe` })
-    .then((message) => console.log(message))
-    .catch((error) =>
-      message(`an error occurred!' ${error}`, { title: "Error (print screen this to get it solved)", type: "error" })
+    .then(() => setTimeout(appClose, 5000))
+    .catch ((error) =>
+    message(`an error occurred!' ${error}`, { title: "Error (print screen this to get it solved)", type: "error" })
     );
 }
 async function downloadFiles() {
@@ -164,10 +164,10 @@ async function downloadFiles() {
     })
       .then(async () => {
         setButtonState(ButtonStates.VERIFY, true);
-        for(const file of destinations) {
+        for (const file of destinations) {
           dlText!.innerHTML = `<div class="percent"> Verifying downloaded files...</div>`;
           await getFileHash(file!, true);
-          
+
         }
         dlProgress!.style!.width = `0%`;
         dlText!.innerHTML = `ready to play`;
@@ -198,7 +198,7 @@ async function handlePlayButton() {
   }
 }
 
-async function getFileHash(fileLocation: string, force= false ) {
+async function getFileHash(fileLocation: string, force = false) {
   const fileName = fileLocation.split("/").pop()!;
 
   if (localStorage.getItem(fileName) && !force) {
@@ -242,7 +242,7 @@ async function fetchPatches() {
     }
 
     const encoded = await getFileHash(filePath);
-    console.log("file hash:",encoded);
+    console.log("file hash:", encoded);
     console.log("remote hash:", patch.Checksum)
     try {
       const timeStamp: { secs_since_epoch: number } = await invoke(
@@ -251,7 +251,7 @@ async function fetchPatches() {
       );
       if (
         (new Date(patch.LastChanged).getTime() / 1000 >
-        timeStamp.secs_since_epoch) || encoded !== patch.Checksum
+          timeStamp.secs_since_epoch) || encoded !== patch.Checksum
       ) {
         await downloadArray.push({ ...patch, filePath });
       }
