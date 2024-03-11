@@ -135,12 +135,7 @@ listen("DOWNLOAD_PROGRESS", (event) => {
 
 // listen for download finished
 listen("DOWNLOAD_FINISHED", (event: { payload: Progress }) => {
-  if (event?.payload.download_id === downloadArray.length - 1) {
-    if (autoPlayCheck.checked) {
-      startGame();
-    }
-    setButtonState(ButtonStates.PLAY, false);
-  }
+  console.log(event);
 });
 
 async function startGame() {
@@ -171,6 +166,9 @@ async function downloadFiles() {
         }
         dlProgress!.style!.width = `0%`;
         dlText!.innerHTML = `ready to play`;
+        if (autoPlayCheck.checked) {
+          startGame();
+        }
         setButtonState(ButtonStates.PLAY, false);
       })
       .catch((err) => {
