@@ -11,6 +11,7 @@ use sha2::{Digest, Sha256};
 use std::process::Command;
 use std::time::{Instant, SystemTime};
 use std::{fs, panic};
+use std::path::Path;
 use tauri::Manager;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt, BufWriter};
@@ -82,10 +83,16 @@ fn modified_time_of(file_path: String) -> Result<SystemTime, std::io::Error> {
 
 #[tauri::command]
 async fn sha256_digest(file_location: String) -> Result<String, String> {
-    println!("{}", file_location);
     info!("getting sha256_digest of file {}", file_location);
+    
+    let mut destination = file_location;
+    println!("this is the file we are getting a digest for: {}",destination);
+    if destination.contains("enUS") {
+        destination = get_correct_realmlist_path(&destination);
+        println!("{}",destination);
+    }
     //get file
-    let mut file = File::open(file_location)
+    let mut file = File::open(destination)
         .await
         .map_err(|err| {
             error!("{}", err.to_string());
@@ -141,6 +148,8 @@ fn open_app(path: String) -> Result<String, String> {
     Ok(format!("Application opened with PID {}", child.id()))
 }
 
+
+
 // fn inv256() -> Vec<u64> {
 //     let mut inv256 = vec![0; 128];
 //     for m in 0..128 {
@@ -187,7 +196,7 @@ async fn download_files(
     }
 
     for (index, url) in urls.iter().enumerate() {
-        let destination = &destinations[index];
+        let mut destination = destinations[index].clone();
 
         let total_size = client.head(url).send().await.map_err(|err| {
             error!("{}", err.to_string());
@@ -206,6 +215,12 @@ async fn download_files(
                 error!("{}", err.to_string());
                 err.to_string()
             })?;
+            println!("{}", destination);
+            if destination.to_lowercase().contains("enus") {
+                println!("WE GO GURL");
+                destination = get_correct_realmlist_path(&destination);
+                println!("{}", destination)
+            }
 
             let mut out = BufWriter::new(File::create(&destination).await.map_err(|err| {
                 error!("{}", err.to_string());
@@ -271,6 +286,24 @@ async fn download_files(
     }
     info!("all files downloaded successfully");
     Ok(())
+}
+
+fn get_correct_realmlist_path(install_directory: &str) -> String {
+    // Define possible language/region codes
+    let language_codes = ["enUS", "enGB", "frFR", "deDE"]; // Add more as needed
+
+    // Iterate over possible directories
+    for code in language_codes.iter() {
+        let modified = install_directory.replace("enUS", "enGB");
+        let file_path = format!("{}", modified);
+        if Path::new(&file_path).exists() {
+            return file_path;
+        }
+    }
+
+    // Fallback to a default path if none found
+    let fallback_path = format!("{}", install_directory);
+    fallback_path
 }
 
 fn setup_logging() -> Result<(), fern::InitError> {

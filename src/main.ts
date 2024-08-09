@@ -145,10 +145,7 @@ async function startGame() {
   invoke("open_app", { path: `${installDirectory}/wow.exe` })
     .then(() => setTimeout(appClose, 5000))
     .catch((error) =>
-      message(`an error occurred!' ${error}`, {
-        title: "Error (print screen this to get it solved)",
-        type: "error",
-      })
+      message(`an error occurred!' ${error}`, { title: "Error (print screen this to get it solved)", type: "error" })
     );
 }
 async function downloadFiles() {
@@ -165,7 +162,8 @@ async function downloadFiles() {
       .then(async () => {
         setButtonState(ButtonStates.VERIFY, true);
         for (const file of destinations) {
-          dlText!.innerHTML = `<div class="percent"> Verifying downloaded files...</div>`;
+          const fileName = file?.split("/").pop()!;
+          dlText!.innerHTML = `<div class="percent"> Verifying downloaded files: ${fileName}</div>`;
           await getFileHash(file!, true);
         }
         dlProgress!.style!.width = `0%`;
@@ -236,23 +234,18 @@ async function fetchPatches() {
 
   for (const [index, patch] of patches.entries()) {
     setButtonState(ButtonStates.VERIFY, true);
-    dlText!.innerHTML = `<div class="percent"> Verifying files...</div><div class="file">${
-      patch.ObjectName
-    }</div>  <div class="speed">Patch ${index + 1}/${patches.length}</div>`;
-    let filePath = `${installDirectory}/Data/${patch.ObjectName}`;
+    dlText!.innerHTML = `<div class="percent"> Verifying files...</div><div class="file">${patch.ObjectName}</div>  <div class="speed">Patch ${index + 1}/${patches.length}</div>`;
+    let filePath = `${installDirectory}/${patch.ObjectName}`;
 
-    if (
-      patch.ObjectName == "wow.exe" ||
-      patch.ObjectName == "ClientExtensions.dll"
-    ) {
-      filePath = `${installDirectory}/${patch.ObjectName}`;
+    if (patch.ObjectName.toLowerCase().includes('.mpq')) {
+      filePath = `${installDirectory}/Data/${patch.ObjectName}`;
     }
 
     if (patch.ObjectName == "realmlist.wtf") {
       filePath = `${installDirectory}/Data/enUS/${patch.ObjectName}`;
     }
-
     const encoded = await getFileHash(filePath);
+    console.log(filePath);
     console.log("file hash:", encoded);
     console.log("remote hash:", patch.Checksum);
     try {
