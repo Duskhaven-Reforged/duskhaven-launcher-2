@@ -8,10 +8,10 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 // use regex::{Captures, Regex};
+use std::path::Path;
 use std::process::Command;
 use std::time::{Instant, SystemTime};
 use std::{fs, panic};
-use std::path::Path;
 use tauri::Manager;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt, BufWriter};
@@ -58,7 +58,6 @@ struct LogMessage {
 
 #[tauri::command]
 fn log_message(log: LogMessage) {
-    
     match log.level.as_str() {
         "error" => log::error!("{}", log.message),
         "warn" => log::warn!("{}", log.message),
@@ -77,38 +76,38 @@ fn modified_time(file_path: String) -> Result<SystemTime, String> {
 }
 
 fn modified_time_of(file_path: String) -> Result<SystemTime, std::io::Error> {
-    let meta = fs::metadata(file_path)?;
+    let mut destination = file_path;
+    if destination.contains("enUS") {
+        destination = get_correct_realmlist_path(&destination);
+        println!("{}", destination);
+    }
+    let meta = fs::metadata(destination)?;
     meta.modified()
 }
 
 #[tauri::command]
 async fn sha256_digest(file_location: String) -> Result<String, String> {
     info!("getting sha256_digest of file {}", file_location);
-    
+
     let mut destination = file_location;
-    println!("this is the file we are getting a digest for: {}",destination);
     if destination.contains("enUS") {
         destination = get_correct_realmlist_path(&destination);
-        println!("{}",destination);
+        println!("{}", destination);
     }
     //get file
-    let mut file = File::open(destination)
-        .await
-        .map_err(|err| {
-            error!("{}", err.to_string());
-            err.to_string()
-        })?;
+    let mut file = File::open(destination).await.map_err(|err| {
+        error!("{}", err.to_string());
+        err.to_string()
+    })?;
     let mut buffer = Vec::new();
     //read file to end (reads it in binary)
-    file.read_to_end(&mut buffer)
-        .await
-        .map_err(|err| {
-            error!("{}", err.to_string());
-            err.to_string()
-        })?;
+    file.read_to_end(&mut buffer).await.map_err(|err| {
+        error!("{}", err.to_string());
+        err.to_string()
+    })?;
     //sets up a sha256 algorith to digest the file
     let mut context = Sha256::new();
-    
+
     //adds content to hasher
     context.update(buffer);
 
@@ -147,8 +146,6 @@ fn open_app(path: String) -> Result<String, String> {
 
     Ok(format!("Application opened with PID {}", child.id()))
 }
-
-
 
 // fn inv256() -> Vec<u64> {
 //     let mut inv256 = vec![0; 128];
@@ -280,7 +277,10 @@ async fn download_files(
             }
             // app.emit_all("DOWNLOAD_FINISHED", &progress).unwrap();
         } else {
-            error!("the problem is :{}", total_size.status().as_str().to_string());
+            error!(
+                "the problem is :{}",
+                total_size.status().as_str().to_string()
+            );
             return Err(total_size.status().as_str().to_string());
         }
     }
@@ -292,12 +292,25 @@ fn get_correct_realmlist_path(install_directory: &str) -> String {
     // Define possible language/region codes
     let language_codes = ["enUS", "enGB", "frFR", "deDE"]; // Add more as needed
 
+    let base_directory = Path::new(install_directory)
+        .parent() // This removes the filename `realmlist.wtf`
+        .map(|p| p.to_string_lossy().to_string()) // Convert to String
+        .unwrap_or_else(|| install_directory.to_string());
+
+    // Extract the filename separately so we can add it back later
+    let file_name = Path::new(install_directory)
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
+
     // Iterate over possible directories
     for code in language_codes.iter() {
-        let modified = install_directory.replace("enUS", "enGB");
-        let file_path = format!("{}", modified);
-        if Path::new(&file_path).exists() {
-            return file_path;
+        let modified = base_directory.replace("enUS", code);
+        println!("{}", modified);
+        if Path::new(&modified).exists() {
+            let full_path = Path::new(&modified).join(file_name);
+            return full_path.to_string_lossy().to_string();
         }
     }
 
@@ -327,8 +340,8 @@ fn setup_logging() -> Result<(), fern::InitError> {
         // Output to a file
         .chain(fern::log_file(log_file_path)?)
         .apply()?;
-    
-        info!("logging set up");
+
+    info!("logging set up");
     Ok(())
 }
 
@@ -352,5 +365,4 @@ fn main() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-
 }
