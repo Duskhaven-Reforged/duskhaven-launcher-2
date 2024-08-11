@@ -322,7 +322,7 @@ fn get_correct_realmlist_path(install_directory: &str) -> String {
 fn setup_logging() -> Result<(), fern::InitError> {
     info!("setting up logging");
     // Customize the log file location here
-    let log_file_path = "logs/my_app.log"; // You can change this path
+    let log_file_path = "logs/launcher.log"; // You can change this path
     std::fs::create_dir_all("logs").expect("Failed to create log directory");
     fern::Dispatch::new()
         .format(|out, message, record| {

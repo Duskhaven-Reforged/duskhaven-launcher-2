@@ -13,6 +13,13 @@ enum ButtonStates {
   UPDATE = "Update",
   VERIFY = "Verifying",
 }
+
+// Define the log message object
+interface LogMessage {
+  message: string;
+  level: 'error' | 'warn' | 'info';
+}
+
 let animcontainer: HTMLElement | null;
 let installDirectory = localStorage.getItem("installDirectory");
 let autoPlay = localStorage.getItem("autoPlay") === "true";
@@ -137,7 +144,7 @@ listen("DOWNLOAD_PROGRESS", (event) => {
 
 // listen for download finished
 listen("DOWNLOAD_FINISHED", (event: { payload: Progress }) => {
-  console.log(event);
+  console.log(event.payload.filesize);
 });
 
 async function startGame() {
@@ -204,10 +211,10 @@ async function getFileHash(fileLocation: string, force = false) {
   if (localStorage.getItem(fileName) && !force) {
     return localStorage.getItem(fileName);
   } else {
-    return invoke("sha256_digest", { fileLocation })
-      .then((result: unknown) => {
-        console.log("setting new item");
+    return await invoke("sha256_digest", { fileLocation })
+      .then(async (result: unknown) => {
         console.log("result", result);
+        await logMessage(`new hash for file set: ${(result as string).toUpperCase()}`, "info" )
         localStorage.setItem(fileName, (result as string).toUpperCase());
         return (result as string).toUpperCase();
       })
@@ -246,6 +253,9 @@ async function fetchPatches() {
     }
     const encoded = await getFileHash(filePath);
     console.log(filePath);
+    
+    await logMessage( `file hash: ${encoded}`, "info");
+    await logMessage(`remote file hash: ${patch.Checksum}`, "info" )
     console.log("file hash:", encoded);
     console.log("remote hash:", patch.Checksum);
     try {
@@ -261,9 +271,11 @@ async function fetchPatches() {
       }
     } catch (error) {
       console.log(error);
+      await logMessage(`remote file hash: ${JSON.stringify(error)}`, "error" )
       await downloadArray.push({ ...patch, filePath });
     }
   }
+  await logMessage(`files to download: ${JSON.stringify(downloadArray)}`, "info" )
   console.log(downloadArray);
   console.timeEnd("test_timer");
   if (downloadArray.length === 0) {
@@ -286,12 +298,23 @@ function setButtonState(state: ButtonStates, disabled: boolean) {
   if (statusText) statusText.innerHTML = state;
 }
 
+async function logMessage(message: string, level: 'error' | 'warn' | 'info') {
+  const log: LogMessage = { message, level };
+  try {
+    await invoke('log_message', { log });
+    console.log(`Logged message: ${message} with level: ${level}`);
+  } catch (error) {
+    console.error(`Failed to log message: ${message}`, error);
+  }
+}
+
 async function appClose() {
   if (playButton.disabled) {
     const confirmed = await ask(
       "Closing the launcher while downloading will corrupt the download. Are you sure you want to close?",
       { title: "Duskhaven Launcher", type: "warning" }
     );
+    await logMessage(`Opening client`, "info" );
     console.log(confirmed);
     if (confirmed) {
       appWindow.close();
