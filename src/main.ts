@@ -66,14 +66,14 @@ async function hasInstallDirectory() {
   const appdir = await appDataDir();
   if (!installDirectory) {
     const yes = await ask(
-      "no install directory set want to set one now?",
+      "There is no install directory set. Would you like to set one now?",
       "Duskhaven"
     );
     if (!yes) {
       installDirectory = appdir;
       localStorage.setItem("installDirectory", appdir);
       await message(
-        `Ok if you press download we will download this in the current directory ${appdir}`,
+        `If you press "Download", the files will be saved in the current directory: ${appdir}`,
         "Duskhaven"
       );
       return;
@@ -152,7 +152,7 @@ async function startGame() {
   invoke("open_app", { path: `${installDirectory}/wow.exe` })
     .then(() => setTimeout(appClose, 5000))
     .catch((error) =>
-      message(`an error occurred!' ${error}`, { title: "Error (print screen this to get it solved)", type: "error" })
+      message(`An error occurred!' ${error}`, { title: "Error (Please take a screenshot and share it to help resolve the issue)", type: "error" })
     );
 }
 async function downloadFiles() {
@@ -174,7 +174,7 @@ async function downloadFiles() {
           await getFileHash(file!, true);
         }
         dlProgress!.style!.width = `0%`;
-        dlText!.innerHTML = `ready to play`;
+        dlText!.innerHTML = `Ready to play!`;
         if (autoPlayCheck.checked) {
           startGame();
         }
@@ -182,7 +182,7 @@ async function downloadFiles() {
       })
       .catch((err) => {
         setButtonState(ButtonStates.UPDATE, false);
-        message(`an error occurred!' ${err}`, {
+        message(`An error occurred!' ${err}`, {
           title: "Error",
           type: "error",
         });
@@ -227,10 +227,10 @@ async function fetchPatches() {
     const patchesPlain: string = await invoke("get_patches");
     patches = JSON.parse(patchesPlain);
     patches = patches.filter((value) => value.IsDirectory === false);
-    dlText!.innerHTML = `getting patch info`;
+    dlText!.innerHTML = `Fetching patch information...`;
   } catch (error) {
-    dlText!.innerHTML = `there seems to be a problem getting the patches: ${error}`;
-    await message(`an error occurred!' ${error}`, {
+    dlText!.innerHTML = `There was a problem retrieving the patches: ${error}`;
+    await message(`An error has occured!' ${error}`, {
       title: "Error",
       type: "error",
     });
@@ -275,11 +275,11 @@ async function fetchPatches() {
       await downloadArray.push({ ...patch, filePath });
     }
   }
-  await logMessage(`files to download: ${JSON.stringify(downloadArray)}`, "info" )
+  await logMessage(`Files to download: ${JSON.stringify(downloadArray)}`, "info" )
   console.log(downloadArray);
   console.timeEnd("test_timer");
   if (downloadArray.length === 0) {
-    dlText!.innerHTML = `ready to play`;
+    dlText!.innerHTML = `Ready to play!`;
     setButtonState(ButtonStates.PLAY, false);
   }
   // else if (downloadArray.length === patches.length) {
@@ -287,7 +287,7 @@ async function fetchPatches() {
   //   setButtonState(ButtonStates.DOWNLOAD, false);
   // }
   else {
-    dlText!.innerHTML = `there is an update available`;
+    dlText!.innerHTML = `An update is available.`;
     setButtonState(ButtonStates.UPDATE, false);
   }
 }
@@ -311,7 +311,7 @@ async function logMessage(message: string, level: 'error' | 'warn' | 'info') {
 async function appClose() {
   if (playButton.disabled) {
     const confirmed = await ask(
-      "Closing the launcher while downloading will corrupt the download. Are you sure you want to close?",
+      "Are you sure you want to close the launcher? Closing it while a download is in progress may corrupt the download.",
       { title: "Duskhaven Launcher", type: "warning" }
     );
     await logMessage(`Opening client`, "info" );
