@@ -346,12 +346,45 @@ fn setup_logging() -> Result<(), fern::InitError> {
 }
 
 fn main() {
-    setup_logging().expect("failed to initialize logging");
+    match setup_logging() {
+        Ok(_) => log::info!("Logging successfully set up"),
+        Err(e) => {
+            log::error!("Failed to initialize logging: {:?}", e);
+            eprintln!("Failed to initialize logging: {:?}", e); // Fallback to print to stderr
+        }
+    }
+    // setup_logging().expect("failed to initialize logging");
+    // panic::set_hook(Box::new(|panic_info| {
+    //     if let Some(s) = panic_info.payload().downcast_ref::<&str>() {
+    //         error!("PANIC! at the disco: {}", s);
+    //     } else {
+    //         error!("PANIC! with some big boy panics");
+    //     }
+    // }));
+
     panic::set_hook(Box::new(|panic_info| {
-        if let Some(s) = panic_info.payload().downcast_ref::<&str>() {
-            error!("PANIC!: {}", s);
-        } else {
-            error!("PANIC!");
+        let payload = panic_info.payload();
+    
+        // Try to downcast to &str
+        if let Some(s) = payload.downcast_ref::<&str>() {
+            error!("PANIC! at the disco: {}", s);
+        }
+        // Try to downcast to String
+        else if let Some(s) = payload.downcast_ref::<String>() {
+            error!("PANIC! at the disco: {}", s);
+        }
+        // If it's not a &str or String, log the type and some additional info
+        else {
+            let type_name = payload.type_id();
+            let location = panic_info.location().unwrap_or_else(|| {
+                panic::Location::caller()
+            });
+            error!(
+                "PANIC! with some big boy panics. Type: {:?}, Location: {}:{}",
+                type_name,
+                location.file(),
+                location.line()
+            );
         }
     }));
     tauri::Builder::default()

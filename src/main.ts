@@ -64,13 +64,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
 async function hasInstallDirectory() {
   const appdir = await appDataDir();
+  await logMessage(`Install directory is : ${appdir}`, "info" )
   if (!installDirectory) {
+    await logMessage(`Asking for isntall directory`, "info" )
     const yes = await ask(
       "There is no install directory set. Would you like to set one now?",
       "Duskhaven"
     );
     if (!yes) {
       installDirectory = appdir;
+      await logMessage(`Directory set to install directory ${installDirectory}`, "info" )
       localStorage.setItem("installDirectory", appdir);
       await message(
         `If you press "Download", the files will be saved in the current directory: ${appdir}`,
@@ -89,7 +92,7 @@ async function setInstallDirectory() {
     return;
   }
   const appdir = await appDataDir();
-
+  await logMessage(`Setting install directory to ${appdir}`, "info" )
   const selected = await open({
     directory: true,
     multiple: false,
@@ -98,11 +101,14 @@ async function setInstallDirectory() {
 
   if (Array.isArray(selected)) {
     installDirectory = selected[0];
+    await logMessage(`Local storage will now remember your directory as ${installDirectory}`, "info" )
     localStorage.setItem("installDirectory", installDirectory);
   } else if (selected === null) {
+    await logMessage(`Setting of the directory canceled`, "warn" )
     // user cancelled the selection
   } else {
     installDirectory = selected;
+    await logMessage(`Local storage will now remember your directory as ${installDirectory}`, "info" )
     localStorage.setItem("installDirectory", installDirectory);
   }
   fetchPatches();
@@ -213,24 +219,26 @@ async function getFileHash(fileLocation: string, force = false) {
   } else {
     return await invoke("sha256_digest", { fileLocation })
       .then(async (result: unknown) => {
-        console.log("result", result);
-        await logMessage(`new hash for file set: ${(result as string).toUpperCase()}`, "info" )
+        console.log("Result", result);
+        await logMessage(`New hash for file set: ${(result as string).toUpperCase()}`, "info" )
         localStorage.setItem(fileName, (result as string).toUpperCase());
         return (result as string).toUpperCase();
       })
-      .catch((e) => console.log("file doesn't exist", e));
+      .catch((e) => console.log("File doesn't exist", e));
   }
 }
 
 async function fetchPatches() {
   try {
     const patchesPlain: string = await invoke("get_patches");
+    await logMessage(`Getting all the patches ${JSON.parse(patchesPlain)}`, "info" )
     patches = JSON.parse(patchesPlain);
     patches = patches.filter((value) => value.IsDirectory === false);
     dlText!.innerHTML = `Fetching patch information...`;
   } catch (error) {
     dlText!.innerHTML = `There was a problem retrieving the patches: ${error}`;
-    await message(`An error has occured!' ${error}`, {
+    await logMessage(`Getting all the patches went sideways: ${error}`, "error" )
+    await message(`An error occurred!' ${error}`, {
       title: "Error",
       type: "error",
     });
@@ -254,10 +262,10 @@ async function fetchPatches() {
     const encoded = await getFileHash(filePath);
     console.log(filePath);
     
-    await logMessage( `file hash: ${encoded}`, "info");
-    await logMessage(`remote file hash: ${patch.Checksum}`, "info" )
-    console.log("file hash:", encoded);
-    console.log("remote hash:", patch.Checksum);
+    await logMessage( `File hash: ${encoded}`, "info");
+    await logMessage(`Remote file hash: ${patch.Checksum}`, "info" )
+    console.log("File hash:", encoded);
+    console.log("Remote hash:", patch.Checksum);
     try {
       const timeStamp: {
         secs_since_epoch: number;
@@ -271,7 +279,7 @@ async function fetchPatches() {
       }
     } catch (error) {
       console.log(error);
-      await logMessage(`remote file hash: ${JSON.stringify(error)}`, "error" )
+      await logMessage(`Remote file hash: ${JSON.stringify(error)}`, "error" )
       await downloadArray.push({ ...patch, filePath });
     }
   }
