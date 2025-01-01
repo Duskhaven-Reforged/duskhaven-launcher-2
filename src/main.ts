@@ -48,6 +48,9 @@ window.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("titlebar-minimize")
     ?.addEventListener("click", () => appWindow.minimize());
+    document
+    .getElementById("titlebar-fix")
+    ?.addEventListener("click", () => removeCache());
   document
     .getElementById("titlebar-close")
     ?.addEventListener("click", () => appClose());
@@ -79,18 +82,16 @@ async function hasInstallDirectory() {
         `If you press "Download", the files will be saved in the current directory: ${appdir}`,
         "Duskhaven"
       );
+        fetchPatches();
       return;
     } else {
       setInstallDirectory();
     }
   }
-  fetchPatches();
+
 }
 
 async function setInstallDirectory() {
-  if (directorySelector.disabled) {
-    return;
-  }
   const appdir = await appDataDir();
   await logMessage(`Setting install directory to ${appdir}`, "info" )
   const selected = await open({
@@ -126,6 +127,12 @@ function toggleAnimation(e: MouseEvent) {
       icon.setAttribute("icon", "mdi:clapperboard-open-outline");
     }
   }
+}
+
+function removeCache() {
+  console.log("shit happens");
+  localStorage.clear();
+  location.reload();
 }
 
 function setAutoPlay(e: any) {

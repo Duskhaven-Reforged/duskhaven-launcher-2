@@ -66,6 +66,7 @@ fn log_message(log: LogMessage) {
     }
 }
 
+
 #[tauri::command]
 async fn sha256_digest(file_location: String) -> Result<String, String> {
     info!("getting sha256_digest of file {}", file_location);

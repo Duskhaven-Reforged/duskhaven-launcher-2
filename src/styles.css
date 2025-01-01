@@ -249,6 +249,10 @@ ul {
   right: 3rem;
 }
 
+.button--fix {
+  right: 5rem;
+}
+
 .button--folder {
   right: 5rem;
 }
@@ -522,4 +526,8 @@ ul {
 
 #play-button {
   font-family: 'constantinebold' !important;
+}
+
+#titlebar-dir {
+  border-left: 2px solid white;
 }
