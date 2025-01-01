@@ -87,6 +87,8 @@ async function hasInstallDirectory() {
     } else {
       setInstallDirectory();
     }
+  } else {
+    fetchPatches();
   }
 
 }
