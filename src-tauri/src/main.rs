@@ -67,25 +67,6 @@ fn log_message(log: LogMessage) {
 }
 
 #[tauri::command]
-fn modified_time(file_path: String) -> Result<SystemTime, String> {
-    info!("getting modified time of: {}", file_path);
-    modified_time_of(file_path).map_err(|err| {
-        error!("{}", err.to_string());
-        err.to_string()
-    }) // separate function to change either error to String
-}
-
-fn modified_time_of(file_path: String) -> Result<SystemTime, std::io::Error> {
-    let mut destination = file_path;
-    if destination.contains("enUS") {
-        destination = get_correct_realmlist_path(&destination);
-        println!("{}", destination);
-    }
-    let meta = fs::metadata(destination)?;
-    meta.modified()
-}
-
-#[tauri::command]
 async fn sha256_digest(file_location: String) -> Result<String, String> {
     info!("getting sha256_digest of file {}", file_location);
 
@@ -391,7 +372,6 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             download_files,
             get_patches,
-            modified_time,
             open_app,
             sha256_digest,
             log_message

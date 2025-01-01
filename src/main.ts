@@ -267,18 +267,12 @@ async function fetchPatches() {
     console.log("File hash:", encoded);
     console.log("Remote hash:", patch.Checksum);
     try {
-      const timeStamp: {
-        secs_since_epoch: number;
-      } = await invoke("modified_time", { filePath });
       if (
-        new Date(patch.LastChanged).getTime() / 1000 >
-          timeStamp.secs_since_epoch ||
         encoded !== patch.Checksum
       ) {
         await downloadArray.push({ ...patch, filePath });
       }
     } catch (error) {
-      console.log(error);
       await logMessage(`Remote file hash: ${JSON.stringify(error)}`, "error" )
       await downloadArray.push({ ...patch, filePath });
     }
