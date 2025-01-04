@@ -1,12 +1,12 @@
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { Patch, Progress } from "./patch";
-import { open, ask, message } from "@tauri-apps/plugin-dialog";
 import { appDataDir } from "@tauri-apps/api/path";
-import { fetch } from "@tauri-apps/plugin-http";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { ask, open } from "@tauri-apps/plugin-dialog";
 import { exists } from "@tauri-apps/plugin-fs";
+import { fetch } from "@tauri-apps/plugin-http";
 import Swal from "sweetalert2";
+import { Patch, Progress } from "./patch";
 
 const appWindow = getCurrentWebviewWindow()
 // import i18n from "./i18n";
@@ -75,7 +75,7 @@ async function hasInstallDirectory() {
   if (installDirectory && validWowFolder) {
     fetchPatches();
   } else {
-    const result = await Swal.fire({
+    await Swal.fire({
       title: "Installation Directory",
       text: "Please select the folder containing your valid 3.3.5 WoW client.",
       showCancelButton: false,
@@ -127,7 +127,7 @@ async function setInstallDirectory() {
         `"wow.exe" not found in the selected directory. Please select again.`,
         "error"
       );
-      const result = await Swal.fire({
+      await Swal.fire({
         title: "Invalid Directory",
         text: `"${installDirectory}" is not a valid 3.3.5 client folder. Please select a valid directory.`,
         showCancelButton: false,
@@ -197,7 +197,7 @@ async function startGame() {
     .catch(async (error) => {
       await Swal.fire({
         title: "Something went wrong",
-        text: `Seems we can't start world of warcraft. Chec kyour permissions for this folder and wow.exe`,
+        text: `Seems we can't start world of warcraft. Chec kyour permissions for this folder and wow.exe. more info: ${error}`,
         showCancelButton: false,
         icon: 'error',
         heightAuto: false,
