@@ -531,3 +531,11 @@ ul {
 #titlebar-dir {
   border-left: 2px solid white;
 }
+
+.swal2-styled.swal2-confirm {
+  background-color: #c98b1b;
+}
+
+.swal2-html-container {
+ color: #eaeaea;
+}

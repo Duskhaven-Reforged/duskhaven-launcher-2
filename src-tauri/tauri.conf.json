@@ -2,79 +2,41 @@
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist",
-    "withGlobalTauri": true
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420"
   },
-  "package": {
-    "productName": "duskhaven-launcher",
-    "version": "2.5.1"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "http": {
-        "all": true,
-        "request": true,
-        "scope": ["https://**/*"]
-      },
-      "fs": {
-        "all": true,
-        "scope": ["$APP/*", "$APP"]
-      },
-      "window": {
-        "all": false,
-        "startDragging": true,
-        "close": true,
-        "hide": true,
-        "show": true,
-        "maximize": true,
-        "minimize": true,
-        "unmaximize": true,
-        "unminimize": true
-      },
-      "dialog": {
-        "all": true,
-        "ask": true,
-        "confirm": true,
-        "message": true,
-        "open": true,
-        "save": true
-      },
-      "shell": {
-        "all": false,
-        "open": true
-      },
-      "path": {
-        "all": true
-      }
-    },
-    "bundle": {
+
+  "bundle": {
+    "targets": "all",
+    "active": true,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "linux": {
       "appimage": {
         "bundleMediaFramework": true
-      },
-      "active": true,
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.duskhaven.dev",
-      "targets": "all"
+      }
     },
-    "security": {
-      "csp": null
-    },
+    "createUpdaterArtifacts": "v1Compatible"
+  },
+  "productName": "duskhaven-launcher",
+  "mainBinaryName": "duskhaven-launcher",
+  "version": "2.6.0",
+  "identifier": "com.duskhaven.dev",
+  "plugins": {
     "updater": {
-      "active": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY0QTlEQkFEQzc2QjUzOEUKUldTT1UydkhyZHVwWk9SUVJmT3I5NUg5eGNucCtZdWlJRW1SMlB4UmJ3YkNzZFV5a2dkVm9TVzYK",
       "endpoints": [
         "https://github.com/laurensmarcelis/duskhaven-launcher-2/releases/latest/download/latest.json"
-      ],
-      "dialog": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY0QTlEQkFEQzc2QjUzOEUKUldTT1UydkhyZHVwWk9SUVJmT3I5NUg5eGNucCtZdWlJRW1SMlB4UmJ3YkNzZFV5a2dkVm9TVzYK"
-    },
+      ]
+    }
+  },
+  "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "decorations": false,
@@ -88,8 +50,12 @@
         "maxHeight": 600,
         "minWidth": 1000,
         "minHeight": 600,
-        "transparent": true
+        "transparent": true,
+        "useHttpsScheme": true
       }
-    ]
+    ],
+    "security": {
+      "csp": null
+    }
   }
 }

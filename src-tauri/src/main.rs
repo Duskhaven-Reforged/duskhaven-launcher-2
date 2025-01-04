@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 extern crate serde_json;
 
+use tauri::{AppHandle, Emitter};
 use log::{error, info};
 // use reqwest::header::HeaderMap;
 use reqwest::Client;
@@ -10,9 +11,8 @@ use sha2::{Digest, Sha256};
 // use regex::{Captures, Regex};
 use std::path::Path;
 use std::process::Command;
-use std::time::{Instant, SystemTime};
-use std::{fs, panic};
-use tauri::Manager;
+use std::time::{Instant};
+use std::{panic};
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt, BufWriter};
 
@@ -66,9 +66,8 @@ fn log_message(log: LogMessage) {
     }
 }
 
-
 #[tauri::command]
-async fn sha256_digest(file_location: String) -> Result<String, String> {
+async fn sha256_digest(file_location: String, local_hash: String, forced: bool) -> Result<String, String> {
     info!("getting sha256_digest of file {}", file_location);
 
     let mut destination = file_location;
@@ -81,6 +80,16 @@ async fn sha256_digest(file_location: String) -> Result<String, String> {
         error!("{}", err.to_string());
         err.to_string()
     })?;
+
+    // If a local hash is provided, return it immediately
+    if !forced {
+       
+        if !local_hash.is_empty()  {
+            info!("Using provided local hash: {}", local_hash);
+            return Ok(local_hash);
+        }
+    }
+
     let mut buffer = Vec::new();
     //read file to end (reads it in binary)
     file.read_to_end(&mut buffer).await.map_err(|err| {
@@ -163,7 +172,7 @@ fn open_app(path: String) -> Result<String, String> {
 
 #[tauri::command]
 async fn download_files(
-    app: tauri::AppHandle,
+    app: AppHandle,
     urls: Vec<String>,
     destinations: Vec<String>,
 ) -> Result<(), String> {
@@ -232,8 +241,8 @@ async fn download_files(
                     0.0
                 };
                 progress.transfer_rate = downloaded as f64 / start.elapsed().as_secs_f64();
-
-                match app.emit_all("DOWNLOAD_PROGRESS", &progress) {
+                //app.emit("DOWNLOAD_PROGRESS", &progress).unwrap();
+                match app.emit("DOWNLOAD_PROGRESS", &progress) {
                     Ok(_) => {
                         //println!("the progress is :{}%", progress.percentage.to_string());
                     }
@@ -244,7 +253,7 @@ async fn download_files(
                     }
                 };
             }
-            match app.emit_all("DOWNLOAD_FINISHED", &progress) {
+            match app.emit("DOWNLOAD_FINISHED", &progress) {
                 Ok(_) => {
                     info!("download for file {} finished", &destination)
                 }
@@ -304,7 +313,7 @@ fn get_correct_realmlist_path(install_directory: &str) -> String {
 fn setup_logging() -> Result<(), fern::InitError> {
     info!("setting up logging");
     // Customize the log file location here
-    let log_file_path = "logs/launcher.log"; // You can change this path
+    let log_file_path: &str = "logs/launcher.log"; // You can change this path
     std::fs::create_dir_all("logs").expect("Failed to create log directory");
     fern::Dispatch::new()
         .format(|out, message, record| {
@@ -346,7 +355,7 @@ fn main() {
 
     panic::set_hook(Box::new(|panic_info| {
         let payload = panic_info.payload();
-    
+
         // Try to downcast to &str
         if let Some(s) = payload.downcast_ref::<&str>() {
             error!("PANIC! at the disco: {}", s);
@@ -358,9 +367,9 @@ fn main() {
         // If it's not a &str or String, log the type and some additional info
         else {
             let type_name = payload.type_id();
-            let location = panic_info.location().unwrap_or_else(|| {
-                panic::Location::caller()
-            });
+            let location = panic_info
+                .location()
+                .unwrap_or_else(|| panic::Location::caller());
             error!(
                 "PANIC! with some big boy panics. Type: {:?}, Location: {}:{}",
                 type_name,
@@ -370,6 +379,11 @@ fn main() {
         }
     }));
     tauri::Builder::default()
+        .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             download_files,
             get_patches,

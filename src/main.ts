@@ -1,10 +1,14 @@
-import { appWindow } from "@tauri-apps/api/window";
-import { invoke } from "@tauri-apps/api/tauri";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { Patch, Progress } from "./patch";
-import { open, ask, message } from "@tauri-apps/api/dialog";
+import { open, ask, message } from "@tauri-apps/plugin-dialog";
 import { appDataDir } from "@tauri-apps/api/path";
-import { getClient, ResponseType } from "@tauri-apps/api/http";
+import { fetch } from "@tauri-apps/plugin-http";
+import { exists } from "@tauri-apps/plugin-fs";
+import Swal from "sweetalert2";
+
+const appWindow = getCurrentWebviewWindow()
 // import i18n from "./i18n";
 
 enum ButtonStates {
@@ -48,7 +52,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("titlebar-minimize")
     ?.addEventListener("click", () => appWindow.minimize());
-    document
+  document
     .getElementById("titlebar-fix")
     ?.addEventListener("click", () => removeCache());
   document
@@ -66,54 +70,79 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 async function hasInstallDirectory() {
-  const appdir = await appDataDir();
-  await logMessage(`Install directory is : ${appdir}`, "info" )
-  if (!installDirectory) {
-    await logMessage(`Asking for isntall directory`, "info" )
-    const yes = await ask(
-      "There is no install directory set. Would you like to set one now?",
-      "Duskhaven"
-    );
-    if (!yes) {
-      installDirectory = appdir;
-      await logMessage(`Directory set to install directory ${installDirectory}`, "info" )
-      localStorage.setItem("installDirectory", appdir);
-      await message(
-        `If you press "Download", the files will be saved in the current directory: ${appdir}`,
-        "Duskhaven"
-      );
-        fetchPatches();
-      return;
-    } else {
-      setInstallDirectory();
-    }
-  } else {
+  const validWowFolder = await exists(`${installDirectory}/wow.exe`)
+
+  if (installDirectory && validWowFolder) {
     fetchPatches();
+  } else {
+    const result = await Swal.fire({
+      title: "Installation Directory",
+      text: "Please select the folder containing your valid 3.3.5 WoW client.",
+      showCancelButton: false,
+      heightAuto: false,
+      animation: false,
+      confirmButtonText: "Select Folder",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+    });
+    setInstallDirectory();
   }
 
 }
 
 async function setInstallDirectory() {
   const appdir = await appDataDir();
-  await logMessage(`Setting install directory to ${appdir}`, "info" )
-  const selected = await open({
-    directory: true,
-    multiple: false,
-    defaultPath: installDirectory || appdir,
-  });
+  await logMessage(`Setting install directory to ${appdir}`, "info")
+  let valid = false;
+  let selected: string | null | string[];
 
-  if (Array.isArray(selected)) {
-    installDirectory = selected[0];
-    await logMessage(`Local storage will now remember your directory as ${installDirectory}`, "info" )
-    localStorage.setItem("installDirectory", installDirectory);
-  } else if (selected === null) {
-    await logMessage(`Setting of the directory canceled`, "warn" )
-    // user cancelled the selection
-  } else {
-    installDirectory = selected;
-    await logMessage(`Local storage will now remember your directory as ${installDirectory}`, "info" )
-    localStorage.setItem("installDirectory", installDirectory);
-  }
+  do {
+    
+    selected = await open({
+      directory: true,
+      multiple: false,
+      defaultPath: installDirectory || appdir,
+    });
+
+    if (Array.isArray(selected)) {
+      installDirectory = selected[0]!;
+
+    } else if (selected === null) {
+      await logMessage(`Setting of the directory canceled`, "warn")
+      // user cancelled the selection
+    } else {
+      installDirectory = selected;
+    }
+
+    if (await exists(`${installDirectory}/wow.exe`)) {
+      valid = true;
+      await logMessage(
+        `Local storage will now remember your directory as ${installDirectory}`,
+        "info"
+      );
+      localStorage.setItem("installDirectory", installDirectory!);
+      fetchPatches();
+    } else {
+      await logMessage(
+        `"wow.exe" not found in the selected directory. Please select again.`,
+        "error"
+      );
+      const result = await Swal.fire({
+        title: "Invalid Directory",
+        text: `"${installDirectory}" is not a valid 3.3.5 client folder. Please select a valid directory.`,
+        showCancelButton: false,
+        icon: 'error',
+        heightAuto: false,
+        animation: false,
+        confirmButtonText: "ok",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+      });
+      valid = false; // Prompt the user to select again
+    }
+    await logMessage(`Local storage will now remember your directory as ${installDirectory}`, "info")
+    localStorage.setItem("installDirectory", installDirectory!);
+  } while (!valid)
   fetchPatches();
 }
 
@@ -148,13 +177,12 @@ listen("DOWNLOAD_PROGRESS", (event) => {
   dlProgress!.style!.width = `${progress.percentage}%`;
   dlText!.innerHTML = `<div class="percent"> ${progress.percentage.toFixed(
     2
-  )}%</div><div class="file">${
-    downloadArray[progress.download_id].ObjectName
-  } </div>  <div class="speed">(${(
-    progress.transfer_rate /
-    1000 /
-    1000
-  ).toFixed(2)} MB/sec)</div>`;
+  )}%</div><div class="file">${downloadArray[progress.download_id].ObjectName
+    } </div>  <div class="speed">(${(
+      progress.transfer_rate /
+      1000 /
+      1000
+    ).toFixed(2)} MB/sec)</div>`;
 });
 
 // listen for download finished
@@ -166,8 +194,20 @@ async function startGame() {
   playAudio();
   invoke("open_app", { path: `${installDirectory}/wow.exe` })
     .then(() => setTimeout(appClose, 5000))
-    .catch((error) =>
-      message(`An error occurred!' ${error}`, { title: "Error (Please take a screenshot and share it to help resolve the issue)", type: "error" })
+    .catch(async (error) => {
+      await Swal.fire({
+        title: "Something went wrong",
+        text: `Seems we can't start world of warcraft. Chec kyour permissions for this folder and wow.exe`,
+        showCancelButton: false,
+        icon: 'error',
+        heightAuto: false,
+        animation: false,
+        confirmButtonText: "ok",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+      });
+    }
+
     );
 }
 async function downloadFiles() {
@@ -195,11 +235,18 @@ async function downloadFiles() {
         }
         setButtonState(ButtonStates.PLAY, false);
       })
-      .catch((err) => {
+      .catch(async (err) => {
         setButtonState(ButtonStates.UPDATE, false);
-        message(`An error occurred!' ${err}`, {
-          title: "Error",
-          type: "error",
+        await Swal.fire({
+          title: "Something went wrong",
+          text: `Something went wrong while downloading the files.  ${err}`,
+          showCancelButton: false,
+          icon: 'error',
+          heightAuto: false,
+          animation: false,
+          confirmButtonText: "ok",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
         });
       });
   } else {
@@ -220,36 +267,45 @@ async function handlePlayButton() {
   }
 }
 
-async function getFileHash(fileLocation: string, force = false) {
+async function getFileHash(fileLocation: string, forced = false) {
   const fileName = fileLocation.split("/").pop()!;
 
-  if (localStorage.getItem(fileName) && !force) {
-    return localStorage.getItem(fileName);
-  } else {
-    return await invoke("sha256_digest", { fileLocation })
-      .then(async (result: unknown) => {
-        console.log("Result", result);
-        await logMessage(`New hash for file set: ${(result as string).toUpperCase()}`, "info" )
-        localStorage.setItem(fileName, (result as string).toUpperCase());
-        return (result as string).toUpperCase();
-      })
-      .catch((e) => console.log("File doesn't exist", e));
-  }
+  return await invoke("sha256_digest", { fileLocation, localHash: localStorage.getItem(fileName) || "", forced })
+    .then(async (result: unknown) => {
+      console.log("Result", result);
+      await logMessage(`New hash for file set: ${(result as string).toUpperCase()}`, "info")
+      localStorage.setItem(fileName, (result as string).toUpperCase());
+      return (result as string).toUpperCase();
+    })
+    .catch((e) => console.log("File doesn't exist", e));
+
+  // if (localStorage.getItem(fileName) && !force) {
+  //   return localStorage.getItem(fileName);
+  // } else {
+
+  // }
 }
 
 async function fetchPatches() {
   try {
     const patchesPlain: string = await invoke("get_patches");
-    await logMessage(`Getting all the patches ${JSON.parse(patchesPlain)}`, "info" )
+    await logMessage(`Getting all the patches ${JSON.parse(patchesPlain)}`, "info")
     patches = JSON.parse(patchesPlain);
     patches = patches.filter((value) => value.IsDirectory === false);
     dlText!.innerHTML = `Fetching patch information...`;
   } catch (error) {
     dlText!.innerHTML = `There was a problem retrieving the patches: ${error}`;
-    await logMessage(`Getting all the patches went sideways: ${error}`, "error" )
-    await message(`An error occurred!' ${error}`, {
-      title: "Error",
-      type: "error",
+    await logMessage(`Getting all the patches went sideways: ${error}`, "error")
+    await Swal.fire({
+      title: "Something went wrong",
+      text: `Something went wrong with fetching the patches. ${error}`,
+      showCancelButton: false,
+      icon: 'error',
+      heightAuto: false,
+      animation: false,
+      confirmButtonText: "ok",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
     });
   }
   downloadArray = [];
@@ -270,9 +326,9 @@ async function fetchPatches() {
     }
     const encoded = await getFileHash(filePath);
     console.log(filePath);
-    
-    await logMessage( `File hash: ${encoded}`, "info");
-    await logMessage(`Remote file hash: ${patch.Checksum}`, "info" )
+
+    await logMessage(`File hash: ${encoded}`, "info");
+    await logMessage(`Remote file hash: ${patch.Checksum}`, "info")
     console.log("File hash:", encoded);
     console.log("Remote hash:", patch.Checksum);
     try {
@@ -282,11 +338,11 @@ async function fetchPatches() {
         await downloadArray.push({ ...patch, filePath });
       }
     } catch (error) {
-      await logMessage(`Remote file hash: ${JSON.stringify(error)}`, "error" )
+      await logMessage(`Remote file hash: ${JSON.stringify(error)}`, "error")
       await downloadArray.push({ ...patch, filePath });
     }
   }
-  await logMessage(`Files to download: ${JSON.stringify(downloadArray)}`, "info" )
+  await logMessage(`Files to download: ${JSON.stringify(downloadArray)}`, "info")
   console.log(downloadArray);
   console.timeEnd("test_timer");
   if (downloadArray.length === 0) {
@@ -323,9 +379,9 @@ async function appClose() {
   if (playButton.disabled) {
     const confirmed = await ask(
       "Are you sure you want to close the launcher? Closing it while a download is in progress may corrupt the download.",
-      { title: "Duskhaven Launcher", type: "warning" }
+      { title: "Duskhaven Launcher", kind: "warning" }
     );
-    await logMessage(`Opening client`, "info" );
+    await logMessage(`Opening client`, "info");
     console.log(confirmed);
     if (confirmed) {
       appWindow.close();
@@ -338,23 +394,38 @@ async function getNews() {
   const newsList: HTMLElement = document.getElementById(
     "newslist"
   ) as HTMLElement;
-  const client = await getClient();
   const options = {
+    method: 'GET',
     headers: {
       Authorization: `Bearer ${process.env.VITE_STRAPPI_TOKEN ||
         import.meta.env.VITE_STRAPPI_TOKEN}`,
       "Content-Type": "application/json",
     },
-    responseType: ResponseType.JSON,
   };
 
-  const response = await client.get(
+  const response = await fetch(
     `${process.env.VITE_STRAPPI_URL ||
-      import.meta.env
-        .VITE_STRAPPI_URL}/blogs?pagination[page]=1&pagination[pageSize]=5&sort[0]=id:desc`,
+    import.meta.env
+      .VITE_STRAPPI_URL}/blogs?pagination[page]=1&pagination[pageSize]=5&sort[0]=id:desc`,
     options
   );
-  const data: any = response.data;
+
+  // Convert ReadableStream to text
+  const reader = response.body?.getReader();
+  if (!reader) {
+    throw new Error('ReadableStream not available');
+  }
+
+  let jsonString = '';
+  const decoder = new TextDecoder();
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    jsonString += decoder.decode(value);
+  }
+  const data = JSON.parse(jsonString); // Parse JSON
+
   data.data.forEach((newsItem: any) => {
     let date = new Date(newsItem.attributes.updatedAt);
 
@@ -367,7 +438,7 @@ async function getNews() {
 
     let formattedDate = [month, day, year].join("/");
     const newsNode = document.createElement("li");
-    newsNode.innerHTML = `<a class="row" target="_blank" href="https://www.duskhaven.net/blog/${newsItem.id}"><div class="news_title"><span class="news_category ${newsItem.attributes.Category}">${newsItem.attributes.Category}</span> ${newsItem.attributes.Title} </div><div class="news_date">${formattedDate}</div></a>`;
+    newsNode.innerHTML = `<a class="row" target="_blank" href="https://duskhaven.net/blog/${newsItem.id}"><div class="news_title"><span class="news_category ${newsItem.attributes.Category.replace(/\s/g, '')}">${newsItem.attributes.Category}</span> ${newsItem.attributes.Title} </div><div class="news_date">${formattedDate}</div></a>`;
     newsList.appendChild(newsNode);
   });
 }
@@ -375,7 +446,7 @@ async function getNews() {
 function onKonamiCode(cb: Function) {
   var input = "";
   var key = "38384040373937396665";
-  document.addEventListener("keydown", function(e) {
+  document.addEventListener("keydown", function (e) {
     input += "" + e.keyCode;
     if (input === key) {
       return cb();
@@ -385,7 +456,7 @@ function onKonamiCode(cb: Function) {
   });
 }
 
-onKonamiCode(function() {
+onKonamiCode(function () {
   document.body.style.backgroundImage = "url('/img/background.gif')";
 });
 
