@@ -59,8 +59,8 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_KEY_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           VITE_ACCESS_KEY: ${{ secrets.VITE_ACCESS_KEY }}
           VITE_FILESERVER_URL: ${{ secrets.VITE_FILESERVER_URL }}
           VITE_STRAPPI_URL: ${{ secrets.VITE_STRAPPI_URL }}
