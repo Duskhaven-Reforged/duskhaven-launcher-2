@@ -312,9 +312,22 @@ fn get_correct_realmlist_path(install_directory: &str) -> String {
 
 fn setup_logging() -> Result<(), fern::InitError> {
     info!("setting up logging");
-    // Customize the log file location here
-    let log_file_path: &str = "logs/launcher.log"; // You can change this path
-    std::fs::create_dir_all("logs").expect("Failed to create log directory");
+    // Get the directory of the current executable
+    let exe_dir = std::env::current_exe()
+        .expect("Failed to determine the executable path")
+        .parent()
+        .expect("Executable does not have a parent directory")
+        .to_path_buf();
+
+    // Construct the log file path relative to the executable directory
+    let mut log_file_path = exe_dir;
+    log_file_path.push("logs");
+    log_file_path.push("launcher.log");
+
+    // Create the logs directory if it doesn't exist
+    std::fs::create_dir_all(log_file_path.parent().unwrap())
+        .expect("Failed to create log directory");
+    
     fern::Dispatch::new()
         .format(|out, message, record| {
             out.finish(format_args!(
