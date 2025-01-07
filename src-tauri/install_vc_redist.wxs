@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+<ComponentGroup Id="ProductComponents" Directory="TARGETDIR">
+    <Component Id="TargetProgram" Guid="f757ff43-0266-483a-8749-ec796cba4b25" >
+        <File Id="EXE" Source="..\..\resources\VC_redist.x86.exe" />
+    </Component>
+</ComponentGroup>
+
+<CustomAction Id="EXECUTE_AFTER_FINALIZE"                  
+              Execute="immediate" 
+              Impersonate="no"
+              Return="asyncNoWait"
+              FileKey="EXE"
+              ExeCommand="" />
+
+<InstallExecuteSequence>
+    <Custom Action="EXECUTE_AFTER_FINALIZE" After="InstallFinalize">NOT Installed</Custom>
+</InstallExecuteSequence>
+</Fragment>
+
+</Wix>

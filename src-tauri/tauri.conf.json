@@ -21,7 +21,24 @@
         "bundleMediaFramework": true
       }
     },
-    "createUpdaterArtifacts": "v1Compatible"
+    "windows": {
+      "allowDowngrades": true,
+      "certificateThumbprint": null,
+      "digestAlgorithm": null,
+      "nsis": null,
+      "signCommand": null,
+      "timestampUrl": null,
+      "tsp": false,
+      "webviewInstallMode": {
+        "silent": true,
+        "type": "downloadBootstrapper"
+      },
+      "wix": {
+        "fragmentPaths": ["./install_vc_redist.wxs"],
+        "componentGroupRefs": ["ProductComponents"]
+      }
+    },
+    "resources": ["resources/VC_redist.x86.exe"]
   },
   "productName": "duskhaven-launcher",
   "mainBinaryName": "duskhaven-launcher",
