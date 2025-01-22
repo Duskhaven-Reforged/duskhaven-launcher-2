@@ -2,17 +2,19 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 extern crate serde_json;
 
-use tauri::{AppHandle, Emitter};
 use log::{error, info};
+use tauri::{AppHandle, Emitter};
 // use reqwest::header::HeaderMap;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 // use regex::{Captures, Regex};
+use std::env;
+use std::net::{Shutdown, TcpStream};
+use std::panic;
 use std::path::Path;
 use std::process::Command;
-use std::time::{Instant};
-use std::{panic};
+use std::time::Instant;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt, BufWriter};
 
@@ -57,6 +59,16 @@ struct LogMessage {
 // const KEY14: u64 = 4887;
 
 #[tauri::command]
+async fn check_server(server_address: String) -> Result<bool, bool> {
+    if let Ok(stream) = TcpStream::connect(server_address) {
+        let _ = stream.shutdown(Shutdown::Both);
+        Ok(true)
+    } else {
+        Err(false)
+    }
+}
+
+#[tauri::command]
 fn log_message(log: LogMessage) {
     match log.level.as_str() {
         "error" => log::error!("{}", log.message),
@@ -67,7 +79,11 @@ fn log_message(log: LogMessage) {
 }
 
 #[tauri::command]
-async fn sha256_digest(file_location: String, local_hash: String, forced: bool) -> Result<String, String> {
+async fn sha256_digest(
+    file_location: String,
+    local_hash: String,
+    forced: bool,
+) -> Result<String, String> {
     info!("getting sha256_digest of file {}", file_location);
 
     let mut destination = file_location;
@@ -83,8 +99,7 @@ async fn sha256_digest(file_location: String, local_hash: String, forced: bool) 
 
     // If a local hash is provided, return it immediately
     if !forced {
-       
-        if !local_hash.is_empty()  {
+        if !local_hash.is_empty() {
             info!("Using provided local hash: {}", local_hash);
             return Ok(local_hash);
         }
@@ -327,7 +342,7 @@ fn setup_logging() -> Result<(), fern::InitError> {
     // Create the logs directory if it doesn't exist
     std::fs::create_dir_all(log_file_path.parent().unwrap())
         .expect("Failed to create log directory");
-    
+
     fern::Dispatch::new()
         .format(|out, message, record| {
             out.finish(format_args!(
@@ -402,7 +417,8 @@ fn main() {
             get_patches,
             open_app,
             sha256_digest,
-            log_message
+            log_message,
+            check_server
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
