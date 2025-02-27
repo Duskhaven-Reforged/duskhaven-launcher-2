@@ -31,7 +31,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY0QTlEQkFEQzc2QjUzOEUKUldTT1UydkhyZHVwWk9SUVJmT3I5NUg5eGNucCtZdWlJRW1SMlB4UmJ3YkNzZFV5a2dkVm9TVzYK",
       "endpoints": [
-        "https://github.com/laurensmarcelis/duskhaven-launcher-2/releases/latest/download/latest.json"
+        "https://github.com/Duskhaven-Reforged/duskhaven-launcher-2/releases/latest/download/latest.json"
       ]
     }
   },
@@ -41,17 +41,18 @@
       {
         "decorations": false,
         "fullscreen": false,
-        "resizable": false,
+        "resizable": true,
         "title": "Duskhaven Launcher",
-        "width": 1000,
-        "height": 600,
+        "width": 1440,
+        "height": 810,
         "hiddenTitle": true,
-        "maxWidth": 1000,
-        "maxHeight": 600,
-        "minWidth": 1000,
-        "minHeight": 600,
+        "maxWidth": 1920,
+        "maxHeight": 1080,
+        "minWidth": 1440,
+        "minHeight": 810,
         "transparent": true,
-        "useHttpsScheme": true
+        "useHttpsScheme": true,
+        "center": true
       }
     ],
     "security": {

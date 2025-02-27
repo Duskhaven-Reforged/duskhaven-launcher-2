@@ -3,12 +3,12 @@ import { listen } from "@tauri-apps/api/event";
 import { appDataDir } from "@tauri-apps/api/path";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { ask, open } from "@tauri-apps/plugin-dialog";
-import { exists } from "@tauri-apps/plugin-fs";
+import { exists, readDir } from "@tauri-apps/plugin-fs";
 import { fetch } from "@tauri-apps/plugin-http";
 import Swal from "sweetalert2";
 import { Patch, Progress } from "./patch";
 
-const appWindow = getCurrentWebviewWindow()
+const appWindow = getCurrentWebviewWindow();
 // import i18n from "./i18n";
 
 enum ButtonStates {
@@ -21,7 +21,7 @@ enum ButtonStates {
 // Define the log message object
 interface LogMessage {
   message: string;
-  level: 'error' | 'warn' | 'info';
+  level: "error" | "warn" | "info";
 }
 
 let animcontainer: HTMLElement | null;
@@ -39,9 +39,10 @@ const autoPlayCheck: HTMLInputElement = document.getElementById(
   "autoplay"
 ) as HTMLInputElement;
 const statusText = playButton?.querySelector(".status-text");
-const dlProgress: HTMLElement | null = document.querySelector(
-  ".download-progress"
-);
+const dlProgress: HTMLElement | null =
+  document.querySelector(".download-progress");
+  const dlSpeed: HTMLElement | null =
+  document.querySelector(".download-speed");
 const directorySelector: HTMLButtonElement = document.getElementById(
   "titlebar-dir"
 ) as HTMLButtonElement;
@@ -49,6 +50,18 @@ const dlText: HTMLElement | null = document.querySelector(
   ".download-container .text-center"
 );
 window.addEventListener("DOMContentLoaded", () => {
+  document.querySelector("[data-tauri-drag-region]")?.addEventListener("mousedown", (e) => {
+    // Get the clicked element
+    const target = e.target as HTMLElement;
+    
+    // Check if the clicked element or its parents have specific roles or tags
+    const isInteractive = target.closest('button, a, input, [role="button"], #titlebar-minimize, #titlebar-fix, #titlebar-close, #animation-toggle');
+    
+    // Only start dragging if we're not clicking an interactive element
+    if (!isInteractive) {
+      appWindow.startDragging();
+    }
+  });
   document
     .getElementById("titlebar-minimize")
     ?.addEventListener("click", () => appWindow.minimize());
@@ -69,8 +82,28 @@ window.addEventListener("DOMContentLoaded", () => {
   getNews();
 });
 
+
+async function isValidWowFolder(folder: string): Promise<boolean> {
+  try {
+      const files = await readDir(folder);
+      return files.some(file => file.name.toLowerCase() === "common.mpq");
+  } catch (e) {
+    await Swal.fire({
+      title: "Installation Directory",
+      text: "It seems you have no Data folder or correct install folder for your 3.3.5 client.",
+      showCancelButton: false,
+      heightAuto: false,
+      animation: false,
+      confirmButtonText: "Select Folder",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+    });
+      console.error("Error reading directory:", e);
+      return false;
+  }
+}
 async function hasInstallDirectory() {
-  const validWowFolder = await exists(`${installDirectory}/wow.exe`)
+  const validWowFolder = await isValidWowFolder(`${installDirectory}/data`);
 
   if (installDirectory && validWowFolder) {
     fetchPatches();
@@ -87,17 +120,15 @@ async function hasInstallDirectory() {
     });
     setInstallDirectory();
   }
-
 }
 
 async function setInstallDirectory() {
   const appdir = await appDataDir();
-  await logMessage(`Setting install directory to ${appdir}`, "info")
+  await logMessage(`Setting install directory to ${appdir}`, "info");
   let valid = false;
   let selected: string | null | string[];
 
   do {
-    
     selected = await open({
       directory: true,
       multiple: false,
@@ -106,9 +137,8 @@ async function setInstallDirectory() {
 
     if (Array.isArray(selected)) {
       installDirectory = selected[0]!;
-
     } else if (selected === null) {
-      await logMessage(`Setting of the directory canceled`, "warn")
+      await logMessage(`Setting of the directory canceled`, "warn");
       // user cancelled the selection
     } else {
       installDirectory = selected;
@@ -131,7 +161,7 @@ async function setInstallDirectory() {
         title: "Invalid Directory",
         text: `"${installDirectory}" is not a valid 3.3.5 client folder. Please select a valid directory.`,
         showCancelButton: false,
-        icon: 'error',
+        icon: "error",
         heightAuto: false,
         animation: false,
         confirmButtonText: "ok",
@@ -140,9 +170,12 @@ async function setInstallDirectory() {
       });
       valid = false; // Prompt the user to select again
     }
-    await logMessage(`Local storage will now remember your directory as ${installDirectory}`, "info")
+    await logMessage(
+      `Local storage will now remember your directory as ${installDirectory}`,
+      "info"
+    );
     localStorage.setItem("installDirectory", installDirectory!);
-  } while (!valid)
+  } while (!valid);
   fetchPatches();
 }
 
@@ -161,7 +194,6 @@ function toggleAnimation(e: MouseEvent) {
 }
 
 function removeCache() {
-  console.log("shit happens");
   localStorage.clear();
   location.reload();
 }
@@ -175,14 +207,16 @@ listen("DOWNLOAD_PROGRESS", (event) => {
   const progress: any = event.payload;
 
   dlProgress!.style!.width = `${progress.percentage}%`;
+  dlSpeed!.innerHTML = `${(
+    progress.transfer_rate /
+    1000 /
+    1000
+  ).toFixed(2)} MB/sec`;
   dlText!.innerHTML = `<div class="percent"> ${progress.percentage.toFixed(
     2
-  )}%</div><div class="file">${downloadArray[progress.download_id].ObjectName
-    } </div>  <div class="speed">(${(
-      progress.transfer_rate /
-      1000 /
-      1000
-    ).toFixed(2)} MB/sec)</div>`;
+  )}%</div><div class="file">${
+    downloadArray[progress.download_id].ObjectName
+  } </div> `;
 });
 
 // listen for download finished
@@ -197,18 +231,16 @@ async function startGame() {
     .catch(async (error) => {
       await Swal.fire({
         title: "Something went wrong",
-        text: `Seems we can't start world of warcraft. Chec kyour permissions for this folder and wow.exe. more info: ${error}`,
+        text: `Seems we can't start world of warcraft. Check your permissions for this folder and wow.exe. more info: ${error}`,
         showCancelButton: false,
-        icon: 'error',
+        icon: "error",
         heightAuto: false,
         animation: false,
         confirmButtonText: "ok",
         allowOutsideClick: false,
         allowEscapeKey: false,
       });
-    }
-
-    );
+    });
 }
 async function downloadFiles() {
   if (downloadArray) {
@@ -225,10 +257,11 @@ async function downloadFiles() {
         setButtonState(ButtonStates.VERIFY, true);
         for (const file of destinations) {
           const fileName = file?.split("/").pop()!;
-          dlText!.innerHTML = `<div class="percent"> Verifying downloaded files: ${fileName}</div>`;
+          dlText!.innerHTML = `<div class="percent"> Verifying file: </div><div class="file">${fileName}</div> `;
           await getFileHash(file!, true);
         }
-        dlProgress!.style!.width = `0%`;
+        dlProgress!.style!.width = `100%`;
+        dlSpeed!.innerHTML ="";
         dlText!.innerHTML = `Ready to play!`;
         if (autoPlayCheck.checked) {
           startGame();
@@ -241,7 +274,7 @@ async function downloadFiles() {
           title: "Something went wrong",
           text: `Something went wrong while downloading the files.  ${err}`,
           showCancelButton: false,
-          icon: 'error',
+          icon: "error",
           heightAuto: false,
           animation: false,
           confirmButtonText: "ok",
@@ -270,10 +303,16 @@ async function handlePlayButton() {
 async function getFileHash(fileLocation: string, forced = false) {
   const fileName = fileLocation.split("/").pop()!;
 
-  return await invoke("sha256_digest", { fileLocation, localHash: localStorage.getItem(fileName) || "", forced })
+  return await invoke("sha256_digest", {
+    fileLocation,
+    localHash: localStorage.getItem(fileName) || "",
+    forced,
+  })
     .then(async (result: unknown) => {
-      console.log("Result", result);
-      await logMessage(`New hash for file set: ${(result as string).toUpperCase()}`, "info")
+      await logMessage(
+        `New hash for file set: ${(result as string).toUpperCase()}`,
+        "info"
+      );
       localStorage.setItem(fileName, (result as string).toUpperCase());
       return (result as string).toUpperCase();
     })
@@ -289,18 +328,24 @@ async function getFileHash(fileLocation: string, forced = false) {
 async function fetchPatches() {
   try {
     const patchesPlain: string = await invoke("get_patches");
-    await logMessage(`Getting all the patches ${JSON.parse(patchesPlain)}`, "info")
+    await logMessage(
+      `Getting all the patches ${JSON.parse(patchesPlain)}`,
+      "info"
+    );
     patches = JSON.parse(patchesPlain);
     patches = patches.filter((value) => value.IsDirectory === false);
     dlText!.innerHTML = `Fetching patch information...`;
   } catch (error) {
-    dlText!.innerHTML = `There was a problem retrieving the patches: ${error}`;
-    await logMessage(`Getting all the patches went sideways: ${error}`, "error")
+    dlText!.innerHTML = `There was a problem retrieving the patches`;
+    await logMessage(
+      `Getting all the patches went sideways: ${error}`,
+      "error"
+    );
     await Swal.fire({
       title: "Something went wrong",
       text: `Something went wrong with fetching the patches. ${error}`,
       showCancelButton: false,
-      icon: 'error',
+      icon: "error",
       heightAuto: false,
       animation: false,
       confirmButtonText: "ok",
@@ -309,15 +354,16 @@ async function fetchPatches() {
     });
   }
   downloadArray = [];
-  console.log(patches);
-  console.time("test_timer");
 
   for (const [index, patch] of patches.entries()) {
     setButtonState(ButtonStates.VERIFY, true);
-    dlText!.innerHTML = `<div class="percent"> Verifying files...</div><div class="file">${patch.ObjectName}</div>  <div class="speed">Patch ${index + 1}/${patches.length}</div>`;
+    dlSpeed!.innerHTML = `Patch ${index + 1}/${patches.length}`;
+    dlText!.innerHTML = `<div class="percent"> Verifying files...</div><div class="file">${
+      patch.ObjectName
+    }</div> `;
     let filePath = `${installDirectory}/${patch.ObjectName}`;
 
-    if (patch.ObjectName.toLowerCase().includes('.mpq')) {
+    if (patch.ObjectName.toLowerCase().includes(".mpq")) {
       filePath = `${installDirectory}/Data/${patch.ObjectName}`;
     }
 
@@ -325,28 +371,26 @@ async function fetchPatches() {
       filePath = `${installDirectory}/Data/enUS/${patch.ObjectName}`;
     }
     const encoded = await getFileHash(filePath);
-    console.log(filePath);
 
     await logMessage(`File hash: ${encoded}`, "info");
-    await logMessage(`Remote file hash: ${patch.Checksum}`, "info")
-    console.log("File hash:", encoded);
-    console.log("Remote hash:", patch.Checksum);
+    await logMessage(`Remote file hash: ${patch.Checksum}`, "info");
     try {
-      if (
-        encoded !== patch.Checksum
-      ) {
+      if (encoded !== patch.Checksum) {
         await downloadArray.push({ ...patch, filePath });
       }
     } catch (error) {
-      await logMessage(`Remote file hash: ${JSON.stringify(error)}`, "error")
+      await logMessage(`Remote file hash: ${JSON.stringify(error)}`, "error");
       await downloadArray.push({ ...patch, filePath });
     }
   }
-  await logMessage(`Files to download: ${JSON.stringify(downloadArray)}`, "info")
-  console.log(downloadArray);
-  console.timeEnd("test_timer");
+  await logMessage(
+    `Files to download: ${JSON.stringify(downloadArray)}`,
+    "info"
+  );
   if (downloadArray.length === 0) {
     dlText!.innerHTML = `Ready to play!`;
+    dlSpeed!.innerHTML = `Ready to play!`;
+    dlProgress!.style!.width = `100%`;
     setButtonState(ButtonStates.PLAY, false);
   }
   // else if (downloadArray.length === patches.length) {
@@ -365,11 +409,10 @@ function setButtonState(state: ButtonStates, disabled: boolean) {
   if (statusText) statusText.innerHTML = state;
 }
 
-async function logMessage(message: string, level: 'error' | 'warn' | 'info') {
+async function logMessage(message: string, level: "error" | "warn" | "info") {
   const log: LogMessage = { message, level };
   try {
-    await invoke('log_message', { log });
-    console.log(`Logged message: ${message} with level: ${level}`);
+    await invoke("log_message", { log });
   } catch (error) {
     console.error(`Failed to log message: ${message}`, error);
   }
@@ -382,7 +425,6 @@ async function appClose() {
       { title: "Duskhaven Launcher", kind: "warning" }
     );
     await logMessage(`Opening client`, "info");
-    console.log(confirmed);
     if (confirmed) {
       appWindow.close();
     }
@@ -395,28 +437,29 @@ async function getNews() {
     "newslist"
   ) as HTMLElement;
   const options = {
-    method: 'GET',
+    method: "GET",
     headers: {
-      Authorization: `Bearer ${process.env.VITE_STRAPPI_TOKEN ||
-        import.meta.env.VITE_STRAPPI_TOKEN}`,
+      Authorization: `Bearer ${
+        process.env.VITE_STRAPPI_TOKEN || import.meta.env.VITE_STRAPPI_TOKEN
+      }`,
       "Content-Type": "application/json",
     },
   };
 
   const response = await fetch(
-    `${process.env.VITE_STRAPPI_URL ||
-    import.meta.env
-      .VITE_STRAPPI_URL}/blogs?pagination[page]=1&pagination[pageSize]=5&sort[0]=id:desc`,
+    `${
+      process.env.VITE_STRAPPI_URL || import.meta.env.VITE_STRAPPI_URL
+    }/blogs?pagination[page]=1&pagination[pageSize]=3&sort[0]=id:desc`,
     options
   );
 
   // Convert ReadableStream to text
   const reader = response.body?.getReader();
   if (!reader) {
-    throw new Error('ReadableStream not available');
+    throw new Error("ReadableStream not available");
   }
 
-  let jsonString = '';
+  let jsonString = "";
   const decoder = new TextDecoder();
 
   while (true) {
@@ -438,7 +481,14 @@ async function getNews() {
 
     let formattedDate = [month, day, year].join("/");
     const newsNode = document.createElement("li");
-    newsNode.innerHTML = `<a class="row" target="_blank" href="https://duskhaven.net/blog/${newsItem.id}"><div class="news_title"><span class="news_category ${newsItem.attributes.Category.replace(/\s/g, '')}">${newsItem.attributes.Category}</span> ${newsItem.attributes.Title} </div><div class="news_date">${formattedDate}</div></a>`;
+    newsNode.innerHTML = `<a class="row" target="_blank" href="https://duskhaven.net/blog/${
+      newsItem.id
+    }"><div class="news_title"><span class="news_category ${newsItem.attributes.Category.replace(
+      /\s/g,
+      ""
+    )}">${newsItem.attributes.Category}</span> ${
+      newsItem.attributes.Title
+    } </div><div class="news_date">${formattedDate}</div></a>`;
     newsList.appendChild(newsNode);
   });
 }
