@@ -8,7 +8,7 @@
     "devapp": "tauri dev",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri info"
+    "tauri": "tauri"
   },
   "dependencies": {
     "@sweetalert2/theme-dark": "^5.0.26",
