@@ -25,7 +25,7 @@
   },
   "productName": "duskhaven-launcher",
   "mainBinaryName": "duskhaven-launcher",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "identifier": "com.duskhaven.dev",
   "plugins": {
     "updater": {
