@@ -12,8 +12,6 @@ import { relaunch } from "@tauri-apps/plugin-process";
 
 const update = await check();
 if (update?.available) {
-  console.log(`Update to ${update.version} available! Date: ${update.date}`);
-  console.log(`Release notes: ${update.body}`);
   await update.downloadAndInstall();
   // requires the `process` plugin
   await relaunch();
