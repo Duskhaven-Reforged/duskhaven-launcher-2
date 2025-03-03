@@ -21,11 +21,11 @@
         "bundleMediaFramework": true
       }
     },
-    "createUpdaterArtifacts": "v1Compatible"
+    "createUpdaterArtifacts": true
   },
   "productName": "duskhaven-launcher",
   "mainBinaryName": "duskhaven-launcher",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "identifier": "com.duskhaven.dev",
   "plugins": {
     "updater": {
