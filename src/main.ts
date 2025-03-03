@@ -7,6 +7,17 @@ import { exists, readDir } from "@tauri-apps/plugin-fs";
 import { fetch } from "@tauri-apps/plugin-http";
 import Swal from "sweetalert2";
 import { Patch, Progress } from "./patch";
+import { check } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
+
+const update = await check();
+if (update?.available) {
+  console.log(`Update to ${update.version} available! Date: ${update.date}`);
+  console.log(`Release notes: ${update.body}`);
+  await update.downloadAndInstall();
+  // requires the `process` plugin
+  await relaunch();
+}
 
 const appWindow = getCurrentWebviewWindow();
 // import i18n from "./i18n";
