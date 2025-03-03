@@ -10,13 +10,6 @@ import { Patch, Progress } from "./patch";
 import { check } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 
-const update = await check();
-if (update?.available) {
-  await update.downloadAndInstall();
-  // requires the `process` plugin
-  await relaunch();
-}
-
 const appWindow = getCurrentWebviewWindow();
 // import i18n from "./i18n";
 
@@ -50,27 +43,38 @@ const autoPlayCheck: HTMLInputElement = document.getElementById(
 const statusText = playButton?.querySelector(".status-text");
 const dlProgress: HTMLElement | null =
   document.querySelector(".download-progress");
-  const dlSpeed: HTMLElement | null =
-  document.querySelector(".download-speed");
+const dlSpeed: HTMLElement | null = document.querySelector(".download-speed");
 const directorySelector: HTMLButtonElement = document.getElementById(
   "titlebar-dir"
 ) as HTMLButtonElement;
 const dlText: HTMLElement | null = document.querySelector(
   ".download-container .text-center"
 );
-window.addEventListener("DOMContentLoaded", () => {
-  document.querySelector("[data-tauri-drag-region]")?.addEventListener("mousedown", (e) => {
-    // Get the clicked element
-    const target = e.target as HTMLElement;
-    
-    // Check if the clicked element or its parents have specific roles or tags
-    const isInteractive = target.closest('button, a, input, [role="button"], #titlebar-minimize, #titlebar-fix, #titlebar-close, #animation-toggle');
-    
-    // Only start dragging if we're not clicking an interactive element
-    if (!isInteractive) {
-      appWindow.startDragging();
-    }
-  });
+window.addEventListener("DOMContentLoaded", async () => {
+  const update = await check();
+  if (update?.available) {
+    await update.downloadAndInstall();
+    // requires the `process` plugin
+    await relaunch();
+  }
+  console.log(update);
+  console.log("DOM fully loaded and parsed");
+  document
+    .querySelector("[data-tauri-drag-region]")
+    ?.addEventListener("mousedown", (e) => {
+      // Get the clicked element
+      const target = e.target as HTMLElement;
+
+      // Check if the clicked element or its parents have specific roles or tags
+      const isInteractive = target.closest(
+        'button, a, input, [role="button"], #titlebar-minimize, #titlebar-fix, #titlebar-close, #animation-toggle'
+      );
+
+      // Only start dragging if we're not clicking an interactive element
+      if (!isInteractive) {
+        appWindow.startDragging();
+      }
+    });
   document
     .getElementById("titlebar-minimize")
     ?.addEventListener("click", () => appWindow.minimize());
@@ -88,14 +92,14 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("autoplay")?.addEventListener("change", setAutoPlay);
   directorySelector?.addEventListener("click", setInstallDirectory);
   playButton?.addEventListener("click", handlePlayButton);
+  console.log("Hello from Tauri!");
   getNews();
 });
 
-
 async function isValidWowFolder(folder: string): Promise<boolean> {
   try {
-      const files = await readDir(folder);
-      return files.some(file => file.name.toLowerCase() === "common.mpq");
+    const files = await readDir(folder);
+    return files.some((file) => file.name.toLowerCase() === "common.mpq");
   } catch (e) {
     await Swal.fire({
       title: "Installation Directory",
@@ -107,8 +111,8 @@ async function isValidWowFolder(folder: string): Promise<boolean> {
       allowOutsideClick: false,
       allowEscapeKey: false,
     });
-      console.error("Error reading directory:", e);
-      return false;
+    console.error("Error reading directory:", e);
+    return false;
   }
 }
 async function hasInstallDirectory() {
@@ -216,11 +220,9 @@ listen("DOWNLOAD_PROGRESS", (event) => {
   const progress: any = event.payload;
 
   dlProgress!.style!.width = `${progress.percentage}%`;
-  dlSpeed!.innerHTML = `${(
-    progress.transfer_rate /
-    1000 /
-    1000
-  ).toFixed(2)} MB/sec`;
+  dlSpeed!.innerHTML = `${(progress.transfer_rate / 1000 / 1000).toFixed(
+    2
+  )} MB/sec`;
   dlText!.innerHTML = `<div class="percent"> ${progress.percentage.toFixed(
     2
   )}%</div><div class="file">${
@@ -270,7 +272,7 @@ async function downloadFiles() {
           await getFileHash(file!, true);
         }
         dlProgress!.style!.width = `100%`;
-        dlSpeed!.innerHTML ="";
+        dlSpeed!.innerHTML = "";
         dlText!.innerHTML = `Ready to play!`;
         if (autoPlayCheck.checked) {
           startGame();
@@ -367,9 +369,7 @@ async function fetchPatches() {
   for (const [index, patch] of patches.entries()) {
     setButtonState(ButtonStates.VERIFY, true);
     dlSpeed!.innerHTML = `Patch ${index + 1}/${patches.length}`;
-    dlText!.innerHTML = `<div class="percent"> Verifying files...</div><div class="file">${
-      patch.ObjectName
-    }</div> `;
+    dlText!.innerHTML = `<div class="percent"> Verifying files...</div><div class="file">${patch.ObjectName}</div> `;
     let filePath = `${installDirectory}/${patch.ObjectName}`;
 
     if (patch.ObjectName.toLowerCase().includes(".mpq")) {
