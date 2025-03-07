@@ -56,7 +56,7 @@ body {
   background-size: cover;
   background-position: 20vw 0px;
   position: relative;
-  background-image: url("assets/back.png");
+  background-image: url("assets/back.jpg");
 
   display: flex;
   flex-direction: column;
@@ -126,7 +126,7 @@ input {
 /*new launcher styles*/
 
 .swal2-styled.swal2-confirm {
-  background-color: #c98b1b;
+  background-color: var(--dlfill);
 }
 
 .swal2-html-container {
@@ -750,4 +750,13 @@ input,
   top: 50%;
   text-align: center;
   transform: translateY(-50%);
+}
+
+#sig-img {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 99;
+  width: 100px;
+  pointer-events: none;
 }

@@ -44,9 +44,6 @@ const statusText = playButton?.querySelector(".status-text");
 const dlProgress: HTMLElement | null =
   document.querySelector(".download-progress");
 const dlSpeed: HTMLElement | null = document.querySelector(".download-speed");
-const directorySelector: HTMLButtonElement = document.getElementById(
-  "titlebar-dir"
-) as HTMLButtonElement;
 const dlText: HTMLElement | null = document.querySelector(
   ".download-container .text-center"
 );
@@ -67,7 +64,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
       // Check if the clicked element or its parents have specific roles or tags
       const isInteractive = target.closest(
-        'button, a, input, [role="button"], #titlebar-minimize, #titlebar-fix, #titlebar-close, #animation-toggle'
+        'button, a, input, [role="button"], #titlebar-minimize, #titlebar-fix, #titlebar-close, #titlebar-dir, #animation-toggle'
       );
 
       // Only start dragging if we're not clicking an interactive element
@@ -82,6 +79,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     .getElementById("titlebar-fix")
     ?.addEventListener("click", () => removeCache());
   document
+    .getElementById("titlebar-dir")
+    ?.addEventListener("click", () => setInstallDirectory());
+  document
     .getElementById("titlebar-close")
     ?.addEventListener("click", () => appClose());
   document
@@ -90,7 +90,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   autoPlayCheck.checked = autoPlay;
   hasInstallDirectory();
   document.getElementById("autoplay")?.addEventListener("change", setAutoPlay);
-  directorySelector?.addEventListener("click", setInstallDirectory);
   playButton?.addEventListener("click", handlePlayButton);
   console.log("Hello from Tauri!");
   getNews();
@@ -136,7 +135,9 @@ async function hasInstallDirectory() {
 }
 
 async function setInstallDirectory() {
+  console.log("wow");
   const appdir = await appDataDir();
+  
   await logMessage(`Setting install directory to ${appdir}`, "info");
   let valid = false;
   let selected: string | null | string[];
@@ -414,7 +415,6 @@ async function fetchPatches() {
 
 function setButtonState(state: ButtonStates, disabled: boolean) {
   playButton.disabled = disabled;
-  directorySelector.disabled = disabled;
   if (statusText) statusText.innerHTML = state;
 }
 
