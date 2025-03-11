@@ -25,13 +25,10 @@
   },
   "productName": "duskhaven-launcher",
   "mainBinaryName": "duskhaven-launcher",
-  "version": "2.8.0",
+  "version": "2.8.1",
   "identifier": "com.duskhaven.dev",
   "plugins": {
     "updater": {
-      "windows": {
-        "installMode": "basicUi"
-      },
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY0QTlEQkFEQzc2QjUzOEUKUldTT1UydkhyZHVwWk9SUVJmT3I5NUg5eGNucCtZdWlJRW1SMlB4UmJ3YkNzZFV5a2dkVm9TVzYK",
       "endpoints": [
         "https://github.com/Duskhaven-Reforged/duskhaven-launcher-2/releases/latest/download/latest.json"
