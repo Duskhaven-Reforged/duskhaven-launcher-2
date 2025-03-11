@@ -173,7 +173,7 @@ async function setInstallDirectory() {
       installDirectory = selected;
     }
 
-    if (await exists(`${installDirectory}/wow.exe`)) {
+    if (await exists(`${installDirectory}/Data/patch-3.MPQ`)) {
       valid = true;
       await logMessage(
         `Local storage will now remember your directory as ${installDirectory}`,
@@ -183,7 +183,7 @@ async function setInstallDirectory() {
       fetchPatches();
     } else {
       await logMessage(
-        `"wow.exe" not found in the selected directory. Please select again.`,
+        `"patch-3.MPQ" not found in the selected directory. Please select again.`,
         "error"
       );
       await Swal.fire({
