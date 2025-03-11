@@ -760,3 +760,7 @@ input,
   width: 100px;
   pointer-events: none;
 }
+
+body.swal2-shown.swal2-height-auto {
+  height: inherit !important
+}

@@ -50,9 +50,7 @@ const dlText: HTMLElement | null = document.querySelector(
 window.addEventListener("DOMContentLoaded", async () => {
   const update = await check();
   if (update?.available) {
-    await update.downloadAndInstall();
-    // requires the `process` plugin
-    await relaunch();
+    showUpdatePrompt(update);
   }
 
   document
@@ -112,6 +110,26 @@ async function isValidWowFolder(folder: string): Promise<boolean> {
     return false;
   }
 }
+
+async function showUpdatePrompt(update: any) {
+  const result = await Swal.fire({
+    title: `v${update. version} Update Available!`,
+    text: `An update is available. Would you like to update now? you are currently on version ${update.currentVersion} and the latest version is ${update.version}`,  
+    icon: "info",
+    showCancelButton: true,
+    confirmButtonText: "Ok",
+    cancelButtonText: "Cancel",
+  });
+  
+  if (result.isConfirmed) {
+    await update.downloadAndInstall();
+    await relaunch();
+  } else {
+    console.log("User canceled update.");
+    // Do nothing
+  }
+}
+
 async function hasInstallDirectory() {
   const validWowFolder = await isValidWowFolder(`${installDirectory}/data`);
 
