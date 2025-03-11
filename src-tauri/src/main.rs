@@ -2,17 +2,17 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 extern crate serde_json;
 
-use tauri::{AppHandle, Emitter};
 use log::{error, info};
+use tauri::{AppHandle, Emitter};
 // use reqwest::header::HeaderMap;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 // use regex::{Captures, Regex};
+use std::panic;
 use std::path::Path;
 use std::process::Command;
-use std::time::{Instant};
-use std::{panic};
+use std::time::Instant;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt, BufWriter};
 
@@ -53,6 +53,12 @@ struct LogMessage {
     level: String,
 }
 
+#[derive(Serialize, Clone)]
+struct HashProgress {
+    progress: f64,
+    filename: String,
+}
+
 // const KEY53: u64 = 8186484168865098;
 // const KEY14: u64 = 4887;
 
@@ -67,7 +73,12 @@ fn log_message(log: LogMessage) {
 }
 
 #[tauri::command]
-async fn sha256_digest(file_location: String, local_hash: String, forced: bool) -> Result<String, String> {
+async fn sha256_digest(
+    app: AppHandle,
+    file_location: String,
+    local_hash: String,
+    forced: bool,
+) -> Result<String, String> {
     info!("getting sha256_digest of file {}", file_location);
 
     let mut destination = file_location;
@@ -76,34 +87,55 @@ async fn sha256_digest(file_location: String, local_hash: String, forced: bool) 
         println!("{}", destination);
     }
     //get file
-    let mut file = File::open(destination).await.map_err(|err| {
-        error!("{}", err.to_string());
-        err.to_string()
-    })?;
+    let mut file = File::open(&destination)
+        .await
+        .map_err(|err| err.to_string())?;
+
+    // Retrieve the file size
+    let metadata = file.metadata().await.map_err(|err| err.to_string())?;
+    let expected_file_size = metadata.len();
 
     // If a local hash is provided, return it immediately
-    if !forced {
-       
-        if !local_hash.is_empty()  {
-            info!("Using provided local hash: {}", local_hash);
-            return Ok(local_hash);
-        }
+    if !forced && !local_hash.is_empty() {
+        info!("Using provided local hash: {}", local_hash);
+        return Ok(local_hash);
     }
 
-    let mut buffer = Vec::new();
-    //read file to end (reads it in binary)
-    file.read_to_end(&mut buffer).await.map_err(|err| {
-        error!("{}", err.to_string());
-        err.to_string()
-    })?;
-    //sets up a sha256 algorith to digest the file
-    let mut context = Sha256::new();
+    // Get the file name from the destination path.
+    let file_name = Path::new(&destination)
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
 
-    //adds content to hasher
-    context.update(buffer);
+    // Define maximum allowed total read size and the chunk size.
+    const CHUNK_SIZE: usize = 16 * 1024 * 1024; // 8MB per chunk
+
+    let mut context = Sha256::new();
+    let mut total_read: u64 = 0;
+    let mut buffer = vec![0u8; CHUNK_SIZE];
+    //read file to end (reads it in binary)
+    loop {
+        let n = file
+            .read(&mut buffer)
+            .await
+            .map_err(|err| err.to_string())?;
+        if n == 0 {
+            break;
+        }
+        total_read += n as u64;
+        context.update(&buffer[..n]);
+
+        let progress = total_read as f64 / (expected_file_size as f64) * 100.0;
+        let progress = HashProgress {
+            progress: progress,
+            filename: file_name.clone(),
+        };
+        app.emit("HASH_PROGRESS", progress)
+            .map_err(|e| e.to_string())?;
+    }
 
     let digest = context.finalize();
-    //hashes the file contents and sends it
     let digest_string = hex::encode(digest);
     Ok(digest_string)
 }
@@ -327,7 +359,7 @@ fn setup_logging() -> Result<(), fern::InitError> {
     // Create the logs directory if it doesn't exist
     std::fs::create_dir_all(log_file_path.parent().unwrap())
         .expect("Failed to create log directory");
-    
+
     fern::Dispatch::new()
         .format(|out, message, record| {
             out.finish(format_args!(

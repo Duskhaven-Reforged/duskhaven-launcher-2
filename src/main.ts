@@ -54,8 +54,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     // requires the `process` plugin
     await relaunch();
   }
-  console.log(update);
-  console.log("DOM fully loaded and parsed");
+
   document
     .querySelector("[data-tauri-drag-region]")
     ?.addEventListener("mousedown", (e) => {
@@ -91,7 +90,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   hasInstallDirectory();
   document.getElementById("autoplay")?.addEventListener("change", setAutoPlay);
   playButton?.addEventListener("click", handlePlayButton);
-  console.log("Hello from Tauri!");
   getNews();
 });
 
@@ -135,7 +133,6 @@ async function hasInstallDirectory() {
 }
 
 async function setInstallDirectory() {
-  console.log("wow");
   const appdir = await appDataDir();
   
   await logMessage(`Setting install directory to ${appdir}`, "info");
@@ -523,3 +520,17 @@ function playAudio() {
   playSound.volume = 0.3;
   playSound.play();
 }
+
+
+listen("HASH_PROGRESS", (event) => {
+  const progress: any = event.payload;
+
+  dlProgress!.style!.width = `${progress.progress}%`;
+  
+  dlSpeed!.innerHTML = ``;
+  dlText!.innerHTML = `<div class="percent"> ${progress.progress.toFixed(
+    2
+  )}%</div><div class="file">verifying file:${
+    progress.filename
+  } </div> `;
+});
