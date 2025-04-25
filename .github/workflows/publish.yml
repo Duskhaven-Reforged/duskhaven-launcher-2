@@ -65,6 +65,7 @@ jobs:
           VITE_FILESERVER_URL: ${{ secrets.VITE_FILESERVER_URL }}
           VITE_STRAPPI_URL: ${{ secrets.VITE_STRAPPI_URL }}
           VITE_STRAPPI_TOKEN: ${{ secrets.VITE_STRAPPI_TOKEN }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
         with:
           tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "Launcher v__VERSION__"

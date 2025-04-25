@@ -52,7 +52,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (update?.available) {
     showUpdatePrompt(update);
   }
-
+  const hasAccess = await checkAccess();
   document
     .querySelector("[data-tauri-drag-region]")
     ?.addEventListener("mousedown", (e) => {
@@ -85,10 +85,15 @@ window.addEventListener("DOMContentLoaded", async () => {
     .getElementById("animation-toggle")
     ?.addEventListener("click", toggleAnimation);
   autoPlayCheck.checked = autoPlay;
-  hasInstallDirectory();
-  document.getElementById("autoplay")?.addEventListener("change", setAutoPlay);
-  playButton?.addEventListener("click", handlePlayButton);
-  getNews();
+  if(hasAccess) {
+    hasInstallDirectory();
+    document.getElementById("autoplay")?.addEventListener("change", setAutoPlay);
+    playButton?.addEventListener("click", handlePlayButton);
+    getNews();
+  } else {
+    appWindow.close();
+  }
+  
 });
 
 async function isValidWowFolder(folder: string): Promise<boolean> {
@@ -128,6 +133,60 @@ async function showUpdatePrompt(update: any) {
     console.log("User canceled update.");
     // Do nothing
   }
+}
+
+async function checkAccess() {
+  console.log("Checking access to the server...", process.env.VITE_API_BASE_URL, import.meta.env.VITE_API_BASE_URL);
+  const response = await fetch(`${process.env.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE_URL}launcher/restricted-check`);
+  const { restrictedMode } = await response.json();
+  console.log("Restricted mode:", restrictedMode);
+  if (restrictedMode) {
+    const { value: username } = await Swal.fire({
+      title: "Server is in restricted mode",
+      text: "Only certain players have access to the server in this mode. If you have gotten acces from one of the GM's Please enter your username to continue. ",
+      input: "text",
+      inputPlaceholder: "Enter your username",
+      showCancelButton: false,
+      confirmButtonText: "Submit",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+    });
+
+    if (username) {
+      const accessResponse = await fetch(`${ process.env.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE_URL}launcher/check-access`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username }),
+      });
+
+      const { allowed } = await accessResponse.json();
+
+      if (!allowed) {
+        await Swal.fire({
+          title: "Access Denied",
+          text: "You are not allowed to download files or access the server at this point.",
+          icon: "error",
+          confirmButtonText: "Ok",
+        });
+        return false;// Close the launcher if access is denied
+      }
+      else {
+        await Swal.fire({
+          title: "Access Granted for now",
+          icon: "success",
+          confirmButtonText: "Ok",
+        });
+      }
+    } else {
+      return false;
+    }
+  } else {
+    return true; // Access is granted, do nothing
+  }
+  return true; // Default to true if no conditions are met
+
 }
 
 async function hasInstallDirectory() {
