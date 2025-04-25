@@ -142,8 +142,8 @@ async function checkAccess() {
   console.log("Restricted mode:", restrictedMode);
   if (restrictedMode) {
     const { value: username } = await Swal.fire({
-      title: "Server is in restricted mode",
-      text: "Only certain players have access to the server in this mode. If you have gotten acces from one of the GM's Please enter your username to continue. ",
+      title: "Restricted Access",
+      text: "Server is only available to authorized QA members and Developers. Please enter your username to verify access. If you are not part of QA or Development, you will not be able to proceed.",
       input: "text",
       inputPlaceholder: "Enter your username",
       showCancelButton: false,
